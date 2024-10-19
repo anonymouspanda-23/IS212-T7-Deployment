@@ -1,0 +1,13 @@
+[
+    {
+        "reassignmentId": 1,
+        "staffId": 1,
+        "staffName": "John Doe",
+        "startDate": "2024-11-01",
+        "endDate": "2024-11-05",
+        "tempReportingManagerId": 2,
+        "tempManagerName": "Jane Doe",
+        "status": "PENDING",
+        "active": null
+    }
+]

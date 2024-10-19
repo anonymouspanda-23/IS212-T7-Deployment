@@ -1,0 +1,91 @@
+{
+  "name": "is212-t7-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "@ant-design/icons": "^5.0.1",
+    "@chakra-ui/react": "^2.8.2",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@preact/signals": "^1.3.0",
+    "@refinedev/antd": "^5.43.1",
+    "@refinedev/chakra-ui": "^2.32.0",
+    "@refinedev/cli": "^2.16.21",
+    "@refinedev/core": "^4.47.1",
+    "@refinedev/devtools": "^1.1.32",
+    "@refinedev/kbar": "^1.3.6",
+    "@refinedev/react-router-v6": "^4.5.5",
+    "@refinedev/simple-rest": "^5.0.1",
+    "@schedule-x/calendar": "^1.63.1",
+    "@schedule-x/event-modal": "^1.63.1",
+    "@schedule-x/events-service": "^2.2.1",
+    "@schedule-x/react": "^1.63.1",
+    "@schedule-x/theme-default": "^1.63.1",
+    "@uiw/react-md-editor": "^3.19.5",
+    "antd": "^5.0.5",
+    "axios": "^1.6.2",
+    "dotenv": "16.4.5",
+    "framer-motion": "^11.5.6",
+    "moment-timezone": "^0.5.45",
+    "preact": "^10.24.0",
+    "react": "^18.0.0",
+    "react-countup": "^6.5.3",
+    "react-dom": "^18.0.0",
+    "react-infinite-scroll-component": "^6.1.0",
+    "react-router-dom": "^6.8.1",
+    "styled-components": "^6.1.13"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.4.1",
+    "@commitlint/config-conventional": "^19.4.1",
+    "@tanstack/react-query": "^5.56.2",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^29.5.13",
+    "@types/node": "^18.16.2",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.1",
+    "@typescript-eslint/parser": "^5.57.1",
+    "@vitejs/plugin-react": "^4.0.0",
+    "@vitest/coverage-v8": "^2.1.1",
+    "eslint": "^8.38.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.3.4",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.6",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.2",
+    "vite": "^4.3.1",
+    "vitest": "^2.1.1"
+  },
+  "scripts": {
+    "dev": "refine dev",
+    "build": "tsc && refine build",
+    "start": "refine start",
+    "refine": "refine",
+    "prettier": "npx prettier . --write",
+    "test": "vitest --coverage"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "refine": {
+    "projectId": "cvDbbL-7DVGFW-l9PPN7"
+  }
+}

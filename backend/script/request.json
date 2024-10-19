@@ -1,0 +1,42 @@
+[
+  {
+    "staffId": 150245,
+    "staffName": "Benjamin Tan",
+    "reportingManager": 151408,
+    "managerName": "Philip Lee",
+    "dept": "Engineering",
+    "requestedDate": "2024-09-15",
+    "reason": "Take care of son",
+    "requestType": "AM"
+  },
+  {
+    "staffId": 150245,
+    "staffName": "Benjamin Tan",
+    "reportingManager": 151408,
+    "managerName": "Philip Lee",
+    "dept": "Engineering",
+    "requestedDate": "2024-09-16",
+    "reason": "Take care of daugher",
+    "requestType": "AM"
+  },
+  {
+    "staffId": 150245,
+    "staffName": "Benjamin Tan",
+    "reportingManager": 151408,
+    "managerName": "Philip Lee",
+    "dept": "Engineering",
+    "requestedDate": "2024-09-17",
+    "reason": "Take care of mother",
+    "requestType": "AM"
+  },
+  {
+    "staffId": 150245,
+    "staffName": "Benjamin Tan",
+    "reportingManager": 151408,
+    "managerName": "Philip Lee",
+    "dept": "Engineering",
+    "requestedDate": "2024-09-18",
+    "reason": "Take care of father",
+    "requestType": "AM"
+  }
+]
