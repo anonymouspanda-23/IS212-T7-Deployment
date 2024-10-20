@@ -1,5 +1,13 @@
 # backend Deployment File
 
+# ServiceAccount for cluster
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spm-service-account
+  namespace: prod
+
 # Namespace for backend
 ---
 apiVersion: v1
