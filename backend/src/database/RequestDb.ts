@@ -16,10 +16,7 @@ interface InsertDocument {
 
 class RequestDb {
   public async getMySchedule(myId: number): Promise<IRequest[]> {
-    const schedule = await Request.find(
-      { staffId: myId },
-      "-_id -createdAt -updatedAt",
-    );
+    const schedule = await Request.find({ staffId: myId }, "-_id -updatedAt");
     return schedule;
   }
 
@@ -38,6 +35,17 @@ class RequestDb {
       status: Status.PENDING,
     });
     return pendingRequests;
+  }
+
+  public async updateRequestinitiatedWithdrawalValue(
+    requestId: number,
+  ): Promise<boolean> {
+    const { modifiedCount } = await Request.updateOne({
+      requestId,
+      initiatedWithdrawal: true,
+    });
+
+    return modifiedCount > 0;
   }
 
   public async cancelPendingRequests(
@@ -155,6 +163,7 @@ class RequestDb {
       const { requestId } = await Request.create(document);
       return requestId;
     } catch (error) {
+      console.log(error);
       return false;
     }
   }

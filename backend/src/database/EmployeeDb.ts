@@ -113,9 +113,9 @@ class EmployeeDb {
     return root;
   }
 
-  public async getRoleOneEmployees(): Promise<IEmployee[]> {
+  public async getRoleOneOrThreeEmployees(): Promise<IEmployee[]> {
     const employees = await Employee.aggregate([
-      { $match: { role: 1 } },
+      { $match: { role: { $in: [1, 3] } } },
       {
         $project: {
           _id: 0,

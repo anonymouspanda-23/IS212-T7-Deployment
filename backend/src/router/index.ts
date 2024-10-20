@@ -397,16 +397,16 @@ router.post("/withdrawRequest", (ctx) =>
 
 /**
  * @openapi
- * /api/v1/getRoleOneEmployees:
+ * /api/v1/getRoleOneOrThreeEmployees:
  *   get:
- *     description: Get role 1 employees
+ *     description: Get role 1 or role 3 employees
  *     tags: [Employee]
  *     responses:
  *       200:
- *         description: Returns an array of role 1 employees object
+ *         description: Returns an array of role 1 or role 3 employees object
  */
-router.get("/getRoleOneEmployees", (ctx) =>
-  employeeController.getRoleOneEmployees(ctx),
+router.get("/getRoleOneOrThreeEmployees", (ctx) =>
+  employeeController.getRoleOneOrThreeEmployees(ctx),
 );
 
 /**

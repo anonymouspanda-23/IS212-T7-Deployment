@@ -51,6 +51,12 @@ class RequestService {
     this.reassignmentService = reassignmentService;
   }
 
+  public async updateRequestinitiatedWithdrawalValue(requestId: number) {
+    return await this.requestDb.updateRequestinitiatedWithdrawalValue(
+      requestId,
+    );
+  }
+
   public async getMySchedule(myId: number) {
     const employee = await this.employeeService.getEmployee(myId);
     if (!employee) {
@@ -304,6 +310,7 @@ class RequestService {
         requestType: type,
         reason: requestDetails.reason,
         position,
+        initiatedWithdrawal: false,
       };
 
       const requestInsert = await this.requestDb.postRequest(document);

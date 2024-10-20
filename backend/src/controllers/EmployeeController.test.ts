@@ -221,7 +221,7 @@ describe("getDeptByManager", () => {
   });
 });
 
-describe("getRoleOneEmployees", () => {
+describe("getRoleOneOrThreeEmployees", () => {
   let employeeController: EmployeeController;
   let employeeService: EmployeeService;
   let employeeDb: EmployeeDb;
@@ -243,10 +243,10 @@ describe("getRoleOneEmployees", () => {
     ];
 
     const getRoleOneEmployeesSpy = jest
-      .spyOn(employeeService, "getRoleOneEmployees")
+      .spyOn(employeeService, "getRoleOneOrThreeEmployees")
       .mockResolvedValue(mockEmployees as any);
 
-    await employeeController.getRoleOneEmployees(ctx);
+    await employeeController.getRoleOneOrThreeEmployees(ctx);
 
     expect(getRoleOneEmployeesSpy).toHaveBeenCalled();
     expect(ctx.body).toBe(mockEmployees);

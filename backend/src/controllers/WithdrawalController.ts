@@ -48,7 +48,7 @@ class WithdrawalController {
     );
     ctx.body = ownRequests;
   }
-  
+
   public async approveWithdrawalRequest(ctx: Context) {
     const approvalDetails = ctx.request.body;
     const validation = withdrawalApprovalSchema.safeParse(approvalDetails);
@@ -89,7 +89,6 @@ class WithdrawalController {
         ? HttpStatusResponse.OK
         : HttpStatusResponse.NOT_MODIFIED;
   }
-  
 }
 
 export default WithdrawalController;

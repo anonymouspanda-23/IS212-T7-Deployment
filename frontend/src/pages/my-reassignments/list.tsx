@@ -20,7 +20,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { ColorModeContext } from "../../contexts/color-mode";
 import moment from "moment";
 import dayjs from "dayjs";
-import type { Dayjs } from 'dayjs';
+import type { Dayjs } from "dayjs";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const { Title } = Typography;
@@ -39,7 +39,7 @@ interface DataType {
 const fetchRequests = async () => {
   try {
     const response = await axios.get(
-      `${backendUrl}/api/v1/getRoleOneEmployees`,
+      `${backendUrl}/api/v1/getRoleOneOrThreeEmployees`,
     );
     return response.data;
   } catch (error) {

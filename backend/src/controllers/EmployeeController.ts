@@ -102,8 +102,8 @@ class EmployeeController {
     ctx.body = result;
   }
 
-  public async getRoleOneEmployees(ctx: Context) {
-    const employees = await this.employeeService.getRoleOneEmployees();
+  public async getRoleOneOrThreeEmployees(ctx: Context) {
+    const employees = await this.employeeService.getRoleOneOrThreeEmployees();
     ctx.body = employees;
   }
 }

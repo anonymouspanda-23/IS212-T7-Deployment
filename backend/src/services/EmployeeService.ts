@@ -38,8 +38,8 @@ class EmployeeService {
     return await this.employeeDb.getAllDeptTeamCount();
   }
 
-  public async getRoleOneEmployees() {
-    return await this.employeeDb.getRoleOneEmployees();
+  public async getRoleOneOrThreeEmployees() {
+    return await this.employeeDb.getRoleOneOrThreeEmployees();
   }
 }
 

@@ -13,6 +13,7 @@ export interface IRequest {
   requestType: RequestType;
   position: string;
   reason: string;
+  initiatedWithdrawal: boolean;
   status: Status;
   performedBy: number | null;
 }
@@ -40,10 +41,18 @@ const RequestSchema = new Schema<IRequest>(
     requestType: { type: String, required: true },
     position: { type: String, required: true },
     reason: { type: String, required: true },
+    initiatedWithdrawal: { type: Boolean, required: true },
     status: {
       type: String,
       required: true,
-      enum: [Status.PENDING, Status.APPROVED, Status.REJECTED, Status.CANCELLED, Status.WITHDRAWN, Status.REVOKED],
+      enum: [
+        Status.PENDING,
+        Status.APPROVED,
+        Status.REJECTED,
+        Status.CANCELLED,
+        Status.WITHDRAWN,
+        Status.REVOKED,
+      ],
       default: Status.PENDING,
     },
     performedBy: {

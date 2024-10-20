@@ -1,21 +1,21 @@
-import RequestService from "./RequestService";
-import { IWithdrawal } from "@/models/Withdrawal";
-import ReassignmentService from "./ReassignmentService";
+import WithdrawalDb from "@/database/WithdrawalDb";
 import {
-  HttpStatusResponse,
-  Request,
   Action,
   Dept,
-  Status,
+  HttpStatusResponse,
   PerformedBy,
+  Request,
+  Status,
 } from "@/helpers";
 import {
   checkPastWithdrawalDate,
   checkValidWithdrawalDate,
 } from "@/helpers/date";
-import LogService from "./LogService";
-import WithdrawalDb from "@/database/WithdrawalDb";
+import { IWithdrawal } from "@/models/Withdrawal";
 import EmployeeService from "./EmployeeService";
+import LogService from "./LogService";
+import ReassignmentService from "./ReassignmentService";
+import RequestService from "./RequestService";
 
 class WithdrawalService {
   private logService: LogService;
@@ -91,12 +91,16 @@ class WithdrawalService {
       managerName,
       dept,
       position,
-      requestedDate
+      requestedDate,
     };
     const result = await this.withdrawalDb.withdrawRequest(document);
     if (!result) {
       return null;
     }
+
+    // Update original request initiatedWithdrawal boolean to true
+    await this.requestService.updateRequestinitiatedWithdrawalValue(requestId);
+
     await this.logService.logRequestHelper({
       performedBy: staffId,
       requestType: Request.WITHDRAWAL,
@@ -221,12 +225,12 @@ class WithdrawalService {
         staffName: `${managerDetails.staffFName} ${managerDetails.staffLName}`,
         dept: managerDetails.dept as Dept,
         position: managerDetails.position,
-        requestId: withdrawalId
+        requestId: withdrawalId,
       });
     }
     return HttpStatusResponse.OK;
   }
-  
+
   public async rejectWithdrawalRequest(
     performedBy: number,
     withdrawalId: number,
@@ -269,7 +273,7 @@ class WithdrawalService {
     }
     return HttpStatusResponse.OK;
   }
-  
+
   public async updateWithdrawalStatusToExpired() {
     const isStatusUpdated =
       await this.withdrawalDb.updateWithdrawalStatusToExpired();
