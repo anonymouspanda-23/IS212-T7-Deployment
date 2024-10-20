@@ -1,0 +1,37 @@
+steps:
+  # Build and tag backend using commit sha
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_BACKEND_CONTAINER}:$SHORT_SHA', './backend']
+
+  # Push the backend container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_BACKEND_CONTAINER}:$SHORT_SHA']
+
+  # Substitute environment variables in the service.yaml file
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        sed -i "s|LOCATION|${_LOCATION}|g; s|BACKEND_CONTAINER|${_BACKEND_CONTAINER}|g; s|REPOSITORY|${_REPOSITORY}|g; s|PROJECT_ID|${PROJECT_ID}|g; s|SHORT_SHA|${SHORT_SHA}|g" deployment/k8s/spm-gke-prod.yaml
+
+  # Create release in Google Kubernetes Engine
+  - name: gcr.io/cloud-builders/gke-deploy
+    entrypoint: gcloud
+    args:
+      [
+        "deploy", "releases", "create", "rel-$SHORT_SHA",
+        "--project", "$PROJECT_ID",
+        "--region", "${_LOCATION}",
+        "--delivery-pipeline", "spm-pipeline",
+        "--skaffold-file", "skaffold.yaml",
+        "--images", "${_BACKEND_CONTAINER}=${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_BACKEND_CONTAINER}:$SHORT_SHA",
+      ]
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _REPOSITORY: 'spm-artifacts'
+  _LOCATION: 'asia-east1'
+  _BACKEND_CONTAINER: 'spm-backend'

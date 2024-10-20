@@ -1,0 +1,13 @@
+# Used to identify GKE service definition to deploy sample app
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: spm-pipeline
+profiles:
+  - name: spm-prod
+    manifests:
+      rawYaml:
+        - deployment/k8s/spm-gke-prod.yaml
+
+deploy:
+  kubectl: {}
