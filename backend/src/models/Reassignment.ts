@@ -15,9 +15,9 @@ export interface IReassignment {
   originalManagerDept: string;
 }
 
-export interface IHandleReassignment{
-  reassignmentId: number,
-  action: any
+export interface IHandleReassignment {
+  reassignmentId: number;
+  action: any;
 }
 
 const Schema = mongoose.Schema;

@@ -32,7 +32,7 @@ const withdrawalDb = new WithdrawalDb();
  * Services
  */
 const employeeService = new EmployeeService(employeeDb);
-const logService = new LogService(logDb);
+const logService = new LogService(logDb, employeeService);
 const reassignmentService = new ReassignmentService(
   reassignmentDb,
   requestDb,
@@ -563,6 +563,13 @@ router.get("/getSubordinateRequestsForTempManager", (ctx) =>
  *   get:
  *     description: Get all logs
  *     tags: [Logs]
+ *     parameters:
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: User's staffId
  *     responses:
  *       200:
  *         description: Returns all logs

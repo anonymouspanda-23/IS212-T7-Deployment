@@ -61,7 +61,10 @@ describe("postRequest", () => {
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
-    logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+    logServiceMock = new LogService(
+      logDbMock,
+      employeeServiceMock,
+    ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
@@ -357,7 +360,10 @@ describe("getPendingOrApprovedRequests", () => {
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
-    logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+    logServiceMock = new LogService(
+      logDbMock,
+      employeeServiceMock,
+    ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
@@ -410,7 +416,10 @@ describe("cancel pending requests", () => {
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
-    logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+    logServiceMock = new LogService(
+      logDbMock,
+      employeeServiceMock,
+    ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
@@ -490,7 +499,10 @@ describe("get pending requests", () => {
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
-    logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+    logServiceMock = new LogService(
+      logDbMock,
+      employeeServiceMock,
+    ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
@@ -636,7 +648,10 @@ describe("get own pending requests", () => {
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
-    logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+    logServiceMock = new LogService(
+      logDbMock,
+      employeeServiceMock,
+    ) as jest.Mocked<LogService>;
     requestService = new RequestService(
       logServiceMock,
       employeeServiceMock,
@@ -703,7 +718,10 @@ describe("reject pending requests", () => {
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
-    logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+    logServiceMock = new LogService(
+      logDbMock,
+      employeeServiceMock,
+    ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
@@ -825,7 +843,10 @@ describe("approve pending requests", () => {
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
-    logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+    logServiceMock = new LogService(
+      logDbMock,
+      employeeServiceMock,
+    ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,
@@ -934,7 +955,10 @@ describe("getPendingRequestByRequestId", () => {
     ) as jest.Mocked<EmployeeService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
-    logServiceMock = new LogService(logDbMock) as jest.Mocked<LogService>;
+    logServiceMock = new LogService(
+      logDbMock,
+      employeeServiceMock,
+    ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
       reassignmentDbMock,

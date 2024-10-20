@@ -451,6 +451,8 @@ class RequestService {
         performedBy: PerformedBy.SYSTEM,
         requestType: Request.REASSIGNMENT,
         action: Action.EXPIRE,
+        dept: PerformedBy.SYSTEM as any,
+        position: PerformedBy.SYSTEM as any,
       });
     }
   }

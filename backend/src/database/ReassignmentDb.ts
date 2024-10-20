@@ -1,6 +1,6 @@
+import { Status } from "@/helpers";
 import Reassignment from "@/models/Reassignment";
 import dayjs from "dayjs";
-import { Status } from "@/helpers";
 
 class ReassignmentDb {
   public async setActiveReassignmentPeriod(): Promise<boolean> {
@@ -66,6 +66,31 @@ class ReassignmentDb {
     return reassignmentRequest;
   }
 
+  public async hasNonRejectedReassignment(
+    staffId: number,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<boolean> {
+    const hasNonRejectedReassignment = await Reassignment.exists({
+      staffId,
+      status: { $ne: Status.REJECTED },
+      $or: [
+        {
+          startDate: { $lte: endDate, $gte: startDate },
+        },
+        {
+          endDate: { $gte: startDate, $lte: endDate },
+        },
+        {
+          startDate: { $lte: startDate },
+          endDate: { $gte: endDate },
+        },
+      ],
+    });
+
+    return !!hasNonRejectedReassignment;
+  }
+
   public async getActiveReassignmentAsTempManager(staffId: number) {
     const reassignmentRequest = await Reassignment.findOne(
       {
@@ -80,17 +105,20 @@ class ReassignmentDb {
   public async getIncomingReassignmentRequests(staffId: number) {
     const incomingRequests = await Reassignment.find({
       tempReportingManagerId: staffId,
-      status: Status.PENDING
+      status: Status.PENDING,
     }).lean();
 
     return incomingRequests;
   }
 
-  public async updateReassignmentStatus(reassignmentId: number, status: Status) {
+  public async updateReassignmentStatus(
+    reassignmentId: number,
+    status: Status,
+  ) {
     return Reassignment.findOneAndUpdate(
       { reassignmentId },
       { $set: { status } },
-      { new: true }
+      { new: true },
     ).lean();
   }
 }

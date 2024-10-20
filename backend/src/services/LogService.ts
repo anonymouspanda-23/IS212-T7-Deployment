@@ -1,5 +1,6 @@
 import LogDb from "@/database/LogDb";
-import { Action, Dept, PerformedBy, Request } from "@/helpers";
+import { Action, Dept, PerformedBy, Request, Role } from "@/helpers";
+import EmployeeService from "./EmployeeService";
 
 interface iLogRequest {
   performedBy: PerformedBy | string;
@@ -16,9 +17,11 @@ interface iLogRequest {
 
 class LogService {
   private logDb: LogDb;
+  private employeeService: EmployeeService;
 
-  constructor(logDb: LogDb) {
+  constructor(logDb: LogDb, employeeService: EmployeeService) {
     this.logDb = logDb;
+    this.employeeService = employeeService;
   }
 
   public async logRequestHelper(options: iLogRequest) {
@@ -62,8 +65,23 @@ class LogService {
     await this.logDb.logAction(log);
   }
 
-  public async getAllLogs() {
-    return await this.logDb.getLogs();
+  public async getAllLogs(staffId: number) {
+    const { role, dept, position }: any =
+      await this.employeeService.getEmployee(staffId);
+
+    const isManagerOrHR = role === Role.HR || role === Role.Manager;
+    const allLogs = await this.logDb.getLogs();
+
+    if (isManagerOrHR) {
+      return allLogs;
+    }
+
+    const personalLogs = {
+      [dept]: {
+        [position]: allLogs[dept][position],
+      },
+    };
+    return personalLogs;
   }
 }
 

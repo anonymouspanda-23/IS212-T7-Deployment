@@ -1,8 +1,8 @@
 import ReassignmentDb from "@/database/ReassignmentDb";
-import { Action, errMsg, PerformedBy, Request, Status } from "@/helpers";
+import RequestDb from "@/database/RequestDb";
+import { Action, Dept, errMsg, PerformedBy, Request, Status } from "@/helpers";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
-import RequestDb from "@/database/RequestDb";
 
 class ReassignmentService {
   private reassignmentDb: ReassignmentDb;
@@ -25,32 +25,23 @@ class ReassignmentService {
   public async insertReassignmentRequest(
     reassignmentRequest: any,
   ): Promise<any> {
-    const { staffId, tempReportingManagerId } = reassignmentRequest;
+    const { staffId, tempReportingManagerId, startDate, endDate } =
+      reassignmentRequest;
     const currentManager = await this.employeeService.getEmployee(staffId);
     const tempReportingManager = await this.employeeService.getEmployee(
       tempReportingManagerId,
     );
     const managerName = `${currentManager!.staffFName} ${currentManager!.staffLName}`;
 
-    // Check if there is any active reassignment between Manager A and Manager B
-    const activeReassignmentReq =
-      await this.reassignmentDb.getReassignmentActive(
-        staffId,
-        tempReportingManagerId,
+    const hasNonRejectedReassignmentBetweenStartAndEndDate =
+      await this.reassignmentDb.hasNonRejectedReassignment(
+        staffId!,
+        startDate!,
+        endDate!,
       );
 
-    if (!!activeReassignmentReq) {
-      return errMsg.ACTIVE_REASSIGNMENT;
-    }
-
-    // Check if Manager B is occupied
-    const tempManagerReassignmentReq =
-      await this.reassignmentDb.getActiveReassignmentAsTempManager(
-        tempReportingManagerId,
-      );
-
-    if (!!tempManagerReassignmentReq) {
-      return errMsg.TEMP_MANAGER_OCCUPIED;
+    if (hasNonRejectedReassignmentBetweenStartAndEndDate) {
+      return errMsg.NON_REJECTED_REASSIGNMENT;
     }
 
     const request = {
@@ -72,11 +63,13 @@ class ReassignmentService {
       requestType: Request.REASSIGNMENT,
       action: Action.APPLY,
       staffName: managerName,
+      dept: currentManager!.dept as Dept,
+      position: currentManager!.position,
     });
   }
 
   public async getReassignmentStatus(staffId: number) {
-    const { staffFName, staffLName }: any =
+    const { staffFName, staffLName, dept, position }: any =
       await this.employeeService.getEmployee(staffId);
 
     const staffName = `${staffFName} ${staffLName}`;
@@ -89,6 +82,8 @@ class ReassignmentService {
       requestType: Request.REASSIGNMENT,
       action: Action.RETRIEVE,
       staffName: staffName,
+      dept: dept as Dept,
+      position: position,
     });
 
     return await this.reassignmentDb.getReassignmentRequest(staffId);
@@ -106,6 +101,8 @@ class ReassignmentService {
         performedBy: PerformedBy.SYSTEM,
         requestType: Request.REASSIGNMENT,
         action: Action.SET_ACTIVE,
+        dept: PerformedBy.SYSTEM as any,
+        position: PerformedBy.SYSTEM as any,
       });
     }
   }
@@ -122,6 +119,8 @@ class ReassignmentService {
         performedBy: PerformedBy.SYSTEM,
         requestType: Request.REASSIGNMENT,
         action: Action.SET_INACTIVE,
+        dept: PerformedBy.SYSTEM as any,
+        position: PerformedBy.SYSTEM as any,
       });
     }
   }
@@ -150,37 +149,45 @@ class ReassignmentService {
   public async handleReassignmentRequest(
     staffId: number,
     reassignmentId: number,
-    action: Action.APPROVE | Action.REJECT
+    action: Action.APPROVE | Action.REJECT,
   ): Promise<void> {
-    const reassignment = await this.reassignmentDb.getIncomingReassignmentRequests(staffId);
+    const reassignment =
+      await this.reassignmentDb.getIncomingReassignmentRequests(staffId);
 
     if (!reassignment) {
-      throw new Error('Reassignment request not found');
+      throw new Error("Reassignment request not found");
     }
 
     if (reassignment[0].tempReportingManagerId !== staffId) {
-      throw new Error('Unauthorized to perform this action');
+      throw new Error("Unauthorized to perform this action");
     }
 
     if (reassignment[0].status !== Status.PENDING) {
-      throw new Error('This request has already been processed');
+      throw new Error("This request has already been processed");
     }
 
-    const newStatus = action === Action.APPROVE ? Status.APPROVED : Status.REJECTED;
-   
-    await this.reassignmentDb.updateReassignmentStatus(reassignmentId, newStatus);
+    const newStatus =
+      action === Action.APPROVE ? Status.APPROVED : Status.REJECTED;
+
+    await this.reassignmentDb.updateReassignmentStatus(
+      reassignmentId,
+      newStatus,
+    );
   }
 
   public async getSubordinateRequestsForTempManager(staffId: number) {
-    const reassignment = await this.reassignmentDb.getActiveReassignmentAsTempManager(staffId);
+    const reassignment =
+      await this.reassignmentDb.getActiveReassignmentAsTempManager(staffId);
     if (!reassignment) {
       return null;
     }
 
-    const subordinateRequests = await this.requestDb.getAllSubordinatesRequests(reassignment.staffId);
+    const subordinateRequests = await this.requestDb.getAllSubordinatesRequests(
+      reassignment.staffId,
+    );
 
     // filter approved requests based on reassignment dates
-    return subordinateRequests.filter(request => {
+    return subordinateRequests.filter((request) => {
       if (request.status === Status.APPROVED) {
         const requestDate = new Date(request.requestedDate);
         const reassignmentStartDate = new Date(reassignment.startDate);
@@ -188,8 +195,8 @@ class ReassignmentService {
 
         return (
           // only return approved requests if they are between startDate and endDate of reassignment
-          (requestDate >= reassignmentStartDate) &&
-          (requestDate <= reassignmentEndDate)
+          requestDate >= reassignmentStartDate &&
+          requestDate <= reassignmentEndDate
         );
       }
       // keep all pending requests
@@ -197,7 +204,5 @@ class ReassignmentService {
     });
   }
 }
-  
-
 
 export default ReassignmentService;
