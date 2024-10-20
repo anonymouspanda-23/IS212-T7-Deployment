@@ -559,7 +559,7 @@ router.get("/getSubordinateRequestsForTempManager", (ctx) =>
 
 /**
  * @openapi
- * /api/v1/getLogsByDept:
+ * /api/v1/getAllLogs:
  *   get:
  *     description: Get all logs
  *     tags: [Logs]
