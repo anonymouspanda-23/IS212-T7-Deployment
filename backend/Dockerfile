@@ -4,4 +4,6 @@ WORKDIR /app
 
 COPY . .
 
-ENTRYPOINT [ "sh", "-c", "npm i && npm run dev" ]
+RUN npm i
+
+ENTRYPOINT [ "sh", "-c", "npm run dev" ]
