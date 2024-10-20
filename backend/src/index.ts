@@ -9,17 +9,7 @@ import "reflect-metadata";
 
 const app = new Koa();
 
-const corsOptions: { [key: string]:  cors.Options } = {
-  development: {
-    origin: "*"
-  },
-  production: {
-    origin: "https://g5t7.vercel.app",
-    credentials: true,
-  },
-};
-
-app.use(cors(corsOptions[process.env.NODE_ENV || 'development']));
+app.use(cors());
 app.use(parser());
 app.use(router.routes());
 
