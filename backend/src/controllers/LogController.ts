@@ -16,7 +16,9 @@ class LogController {
       return UtilsController.throwAPIError(ctx, errMsg.MISSING_HEADER);
     }
     const result = await this.logService.getAllLogs(Number(id));
-    ctx.body = result;
+    ctx.body = !result
+      ? (ctx.body = { errMsg: errMsg.LOGS_NOT_FOUND })
+      : result;
   }
 }
 

@@ -30,6 +30,7 @@ enum errMsg {
   INVALID_ACTION = "Invalid action. Must be 'APPROVE' or 'REJECT'.",
   NO_ACTIVE_REASSIGNMENT = "No active reassignment found for the staff member as temp manager",
   GENERIC_ERROR = "An error has occurred.",
+  LOGS_NOT_FOUND = "No logs found",
 }
 
 const noteMsg =

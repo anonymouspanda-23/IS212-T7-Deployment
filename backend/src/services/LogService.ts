@@ -76,12 +76,16 @@ class LogService {
       return allLogs;
     }
 
-    const personalLogs = {
-      [dept]: {
-        [position]: allLogs[dept][position],
-      },
-    };
-    return personalLogs;
+    if (allLogs[dept] && allLogs[dept][position]) {
+      const personalLogs = {
+        [dept]: {
+          [position]: allLogs[dept][position],
+        },
+      };
+      return personalLogs;
+    }
+
+    return null;
   }
 }
 
