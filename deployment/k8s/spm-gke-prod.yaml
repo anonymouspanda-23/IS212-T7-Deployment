@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: backend-container
-          image: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/demo:SHORT_SHA
+          image: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/BACKEND_CONTAINER:SHORT_SHA
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3001
