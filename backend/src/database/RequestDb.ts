@@ -265,6 +265,24 @@ class RequestDb {
     }
     return HttpStatusResponse.OK;
   }
+
+  public async setWithdrawnStatus(requestId: number): Promise<string | null> {
+    const { modifiedCount } = await Request.updateMany(
+      {
+        requestId,
+        status: Status.APPROVED,
+      },
+      {
+        $set: {
+          status: Status.WITHDRAWN,
+        },
+      },
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
 }
 
 export default RequestDb;

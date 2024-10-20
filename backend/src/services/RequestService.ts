@@ -507,5 +507,13 @@ class RequestService {
 
     return HttpStatusResponse.OK;
   }
+
+  public async setWithdrawnStatus(requestId: number): Promise<string | null> {
+    const result = await this.requestDb.setWithdrawnStatus(requestId);
+    if (!result) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
 }
 export default RequestService;

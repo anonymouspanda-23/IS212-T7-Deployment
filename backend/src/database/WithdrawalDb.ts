@@ -1,5 +1,5 @@
 import Withdrawal, { IWithdrawal } from "@/models/Withdrawal";
-import { HttpStatusResponse } from "@/helpers";
+import { HttpStatusResponse, Status } from "@/helpers";
 
 interface InsertDocument {
   requestId: number;
@@ -47,6 +47,39 @@ class WithdrawalDb {
     });
     return ownRequests;
   }
+
+  public async getWithdrawalRequestById(
+    withdrawalId: number,
+  ): Promise<IWithdrawal | null> {
+    const withdrawalRequest = await Withdrawal.findOne({
+      withdrawalId: withdrawalId,
+    });
+    if (!withdrawalRequest) {
+      return null;
+    }
+    return withdrawalRequest;
+  }
+
+  public async approveWithdrawalRequest(
+    withdrawalId: number,
+  ): Promise<string | null> {
+    const { modifiedCount } = await Withdrawal.updateMany(
+      {
+        withdrawalId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.APPROVED,
+        },
+      },
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
+
 }
 
 export default WithdrawalDb;

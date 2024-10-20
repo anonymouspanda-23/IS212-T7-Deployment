@@ -613,4 +613,31 @@ router.get(
   (ctx) => withdrawalController.getSubordinatesWithdrawalRequests(ctx),
 );
 
+/**
+ * @openapi
+ * /api/v1/approveWithdrawalRequest:
+ *   post:
+ *     description: Approve subordinate's withdrawal request
+ *     tags: [Withdrawal Request]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               performedBy:
+ *                 type: number
+ *                 description: Manager's own staffId
+ *               withdrawalId:
+ *                 type: number
+ *                 description: withdrawalId to be approved
+ *             required:
+ *               - performedBy
+ *               - withdrawalId
+ */
+router.post("/approveWithdrawalRequest", (ctx) =>
+  withdrawalController.approveWithdrawalRequest(ctx),
+);
+
 export default router;

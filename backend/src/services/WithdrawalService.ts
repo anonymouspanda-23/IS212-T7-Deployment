@@ -1,7 +1,7 @@
 import RequestService from "./RequestService";
 import { IWithdrawal } from "@/models/Withdrawal";
 import ReassignmentService from "./ReassignmentService";
-import { HttpStatusResponse, Request, Action, Dept } from "@/helpers";
+import { HttpStatusResponse, Request, Action, Dept, Status } from "@/helpers";
 import {
   checkPastWithdrawalDate,
   checkValidWithdrawalDate,
@@ -164,6 +164,59 @@ class WithdrawalService {
       });
     }
     return ownRequests;
+  }
+
+  public async getWithdrawalRequestById(withdrawalId: number) {
+    const request = await this.withdrawalDb.getWithdrawalRequestById(
+      Number(withdrawalId),
+    );
+    if (!request) {
+      return null;
+    }
+    return request;
+  }
+
+  public async approveWithdrawalRequest(
+    performedBy: number,
+    withdrawalId: number,
+  ): Promise<string | null> {
+    const request = await this.getWithdrawalRequestById(withdrawalId);
+    if (!request || request.status !== Status.PENDING) {
+      return null;
+    }
+
+    if (performedBy !== request.reportingManager) {
+      const activeReassignment =
+        await this.reassignmentService.getReassignmentActive(
+          request.reportingManager as any,
+          performedBy,
+        );
+      if (!activeReassignment) {
+        return null;
+      }
+    }
+    const withdrawalApproval =
+      await this.withdrawalDb.approveWithdrawalRequest(withdrawalId);
+    if (!withdrawalApproval) {
+      return null;
+    }
+    const result = this.requestService.setWithdrawnStatus(request.requestId);
+    if (!result) {
+      return null;
+    }
+    const managerDetails = await this.employeeService.getEmployee(performedBy);
+    if (managerDetails) {
+      await this.logService.logRequestHelper({
+        performedBy: performedBy,
+        requestType: Request.WITHDRAWAL,
+        action: Action.APPROVE,
+        staffName: `${managerDetails.staffFName} ${managerDetails.staffLName}`,
+        dept: managerDetails.dept as Dept,
+        position: managerDetails.position,
+        requestId: withdrawalId
+      });
+    }
+    return HttpStatusResponse.OK;
   }
 }
 export default WithdrawalService;

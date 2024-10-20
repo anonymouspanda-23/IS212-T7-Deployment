@@ -42,6 +42,17 @@ const revocationSchema = z.object({
   reason: z.string(),
 });
 
+const withdrawalApprovalSchema = z.object({
+  performedBy: z.number(),
+  withdrawalId: z.number(),
+});
+
+const withdrawalRejectionSchema = z.object({
+  performedBy: z.number(),
+  withdrawalId: z.number(),
+  reason: z.string(),
+});
+
 export {
   approvalSchema,
   numberSchema,
@@ -50,4 +61,6 @@ export {
   requestSchema,
   staffIdSchema,
   revocationSchema,
+  withdrawalApprovalSchema,
+  withdrawalRejectionSchema,
 };
