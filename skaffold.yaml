@@ -7,7 +7,7 @@ profiles:
   - name: spm-prod
     manifests:
       rawYaml:
-        - deployment/kubernetes/spm-gke-prod.yaml
+        - deployment/k8s/spm-gke-prod.yaml
 
 deploy:
   kubectl: {}
