@@ -1,5 +1,6 @@
 import Withdrawal, { IWithdrawal } from "@/models/Withdrawal";
 import { HttpStatusResponse, Status } from "@/helpers";
+import dayjs from "dayjs";
 
 interface InsertDocument {
   requestId: number;
@@ -59,7 +60,7 @@ class WithdrawalDb {
     }
     return withdrawalRequest;
   }
-
+  
   public async approveWithdrawalRequest(
     withdrawalId: number,
   ): Promise<string | null> {
@@ -80,6 +81,44 @@ class WithdrawalDb {
     return HttpStatusResponse.OK;
   }
 
+  public async rejectWithdrawalRequest(
+    withdrawalId: number,
+    reason: string,
+  ): Promise<string | null> {
+    const { modifiedCount } = await Withdrawal.updateMany(
+      {
+        withdrawalId,
+        status: Status.PENDING,
+      },
+      {
+        $set: {
+          status: Status.REJECTED,
+          reason: reason,
+        },
+      },
+    );
+    if (modifiedCount == 0) {
+      return null;
+    }
+    return HttpStatusResponse.OK;
+  }
+
+  public async updateWithdrawalStatusToExpired(): Promise<boolean> {
+    const now = dayjs().utc(true).startOf("day");
+    const { modifiedCount } = await Withdrawal.updateMany(
+      {
+        status: Status.PENDING,
+        requestedDate: now.toDate(),
+      },
+      {
+        $set: {
+          status: Status.EXPIRED,
+        },
+      },
+    );
+
+    return modifiedCount > 0;
+  }
 }
 
 export default WithdrawalDb;

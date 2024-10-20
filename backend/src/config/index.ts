@@ -7,6 +7,8 @@ import EmployeeService from "@/services/EmployeeService";
 import LogService from "@/services/LogService";
 import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
+import WithdrawalService from "@/services/WithdrawalService";
+import WithdrawalDb from "@/database/WithdrawalDb";
 import mongoose from "mongoose";
 
 const startCronJob = async () => {
@@ -33,7 +35,20 @@ const startCronJob = async () => {
     reassignmentService,
   );
 
-  const job = new CronJob(requestService, reassignmentService);
+  const withdrawalDb = new WithdrawalDb();
+  const withdrawalService = new WithdrawalService(
+    logService,
+    withdrawalDb,
+    requestService,
+    reassignmentService,
+    employeeService,
+  );
+
+  const job = new CronJob(
+    requestService,
+    reassignmentService,
+    withdrawalService,
+  );
   job.execute();
 };
 

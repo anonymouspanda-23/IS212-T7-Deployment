@@ -9,10 +9,11 @@ export interface IWithdrawal {
   staffName: string;
   reportingManager: number | null;
   managerName: string | null;
-  dept: string;  
+  dept: string;
   position: string;
   reason: string | null;
   status: Status;
+  requestedDate: Date;
 }
 
 const Schema = mongoose.Schema;
@@ -25,7 +26,7 @@ const WithdrawalSchema = new Schema<IWithdrawal>(
       type: Number,
       ref: "Request",
       required: true,
-    },    
+    },
     staffId: {
       type: Number,
       ref: "Employee",
@@ -38,15 +39,16 @@ const WithdrawalSchema = new Schema<IWithdrawal>(
       required: false,
     },
     managerName: { type: String, required: false },
-    dept: { type: String, required: true },    
+    dept: { type: String, required: true },
     position: { type: String, required: true },
     reason: { type: String, required: false },
     status: {
       type: String,
       required: true,
-      enum: ["PENDING", "APPROVED", "REJECTED"],
+      enum: [Status.PENDING, Status.APPROVED, Status.REJECTED, Status.EXPIRED],
       default: Status.PENDING,
     },
+    requestedDate: { type: Date, required: true },
   },
   {
     timestamps: true,

@@ -640,4 +640,35 @@ router.post("/approveWithdrawalRequest", (ctx) =>
   withdrawalController.approveWithdrawalRequest(ctx),
 );
 
+/**
+ * @openapi
+ * /api/v1/rejectWithdrawalRequest:
+ *   post:
+ *     description: Reject subordinate's withdrawal request
+ *     tags: [Withdrawal Request]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               performedBy:
+ *                 type: number
+ *                 description: Manager's own staffId
+ *               withdrawalId:
+ *                 type: number
+ *                 description: withdrawalId to be approved
+ *               reason:
+ *                 type: number
+ *                 description: reason for rejection
+ *             required:
+ *               - performedBy
+ *               - withdrawalId
+ *               - reason
+ */
+router.post("/rejectWithdrawalRequest", (ctx) =>
+  withdrawalController.rejectWithdrawalRequest(ctx),
+);
+
 export default router;
