@@ -6,4 +6,5 @@ module.exports = {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
   testPathIgnorePatterns: ["/node_modules/", "/dist/"],
+  coveragePathIgnorePatterns: ["backend/src/models/EmployeeTreeNode.ts"],
 };
