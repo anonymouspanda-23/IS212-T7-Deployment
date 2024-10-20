@@ -17,13 +17,14 @@ import {
   createViewWeek,
   createCalendar,
   viewMonthGrid,
-} from '@schedule-x/calendar'
+  CalendarApp
+} from "@schedule-x/calendar";
 import { createEventModalPlugin } from '@schedule-x/event-modal'
 import { customCalendarConfig } from "@/config/calendarType";
 import {calendarVar, RequestType} from '../../helper/scheduleVar'
 import '@schedule-x/theme-default/dist/index.css'
 import { IEvent, IResponseData } from "@/interfaces/schedule";
- 
+
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 export const ScheduleList = () => {
@@ -96,7 +97,7 @@ export const ScheduleList = () => {
   // Schedule-X const
   const { mode } = useContext(ColorModeContext);
   const calendarTheme = mode === "dark" ? "dark" : "light";
-  const calendarRef = useRef<Calendar | null>(null);
+  const calendarRef = useRef<CalendarApp | null>(null);
 
   // Create the Calendar
   useEffect(() => {
@@ -118,7 +119,7 @@ export const ScheduleList = () => {
         plugins: [createEventModalPlugin()],
         calendars: customCalendarConfig,
       });
-      calendarRef.current.render(document.getElementById('calendar'));
+      calendarRef.current.render(document.getElementById('calendar') as HTMLElement);
     }
   }, [calendarEvents, eventsLoaded, calendarTheme]);
 

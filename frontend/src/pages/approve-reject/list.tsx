@@ -75,7 +75,7 @@ export const IncomingList: React.FC = () => {
 
       // Update the global count of pending requests
       const pendingCount = pendingRequests.filter(
-        (request) => request.status === "Pending",
+        (request: { status: string; }) => request.status === "Pending",
       ).length;
 
       setPendingCount(pendingCount);

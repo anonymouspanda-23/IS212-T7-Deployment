@@ -19,6 +19,8 @@ import axios from "axios";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { ColorModeContext } from "../../contexts/color-mode";
 import moment from "moment";
+import dayjs from "dayjs";
+import type { Dayjs } from 'dayjs';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const { Title } = Typography;
@@ -59,7 +61,7 @@ export const MyReassignments = () => {
     null,
   );
   const [dateRange, setDateRange] = useState<
-    [moment.Moment, moment.Moment] | null
+    [Dayjs | null, Dayjs | null] | null
   >(null);
   const { mode } = useContext(ColorModeContext);
 
@@ -117,7 +119,7 @@ export const MyReassignments = () => {
   };
 
   const handleAssignRole = async () => {
-    if (dateRange) {
+    if (dateRange && dateRange[0] && dateRange[1]) {
       const startDate = dateRange[0].format("YYYY-MM-DD");
       const endDate = dateRange[1].format("YYYY-MM-DD");
 
@@ -140,10 +142,6 @@ export const MyReassignments = () => {
     } else {
       message.error("Please select a date range before assigning a role.");
     }
-  };
-
-  const disablePastDates = (current: moment.Moment) => {
-    return current && current < moment().startOf("day");
   };
 
   return (
@@ -244,7 +242,7 @@ export const MyReassignments = () => {
             />
             <RangePicker
               style={{ width: "100%", marginBottom: 16 }}
-              disabledDate={disablePastDates}
+              minDate={dayjs(moment().startOf("day").toDate())}
               value={dateRange} // Add this line to bind the date range to the picker
               onChange={(dates) => {
                 setDateRange(dates);
