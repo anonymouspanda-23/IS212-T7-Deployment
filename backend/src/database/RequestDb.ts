@@ -163,7 +163,6 @@ class RequestDb {
       const { requestId } = await Request.create(document);
       return requestId;
     } catch (error) {
-      console.log(error);
       return false;
     }
   }
