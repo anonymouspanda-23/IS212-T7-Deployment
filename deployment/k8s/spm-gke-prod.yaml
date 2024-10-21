@@ -110,7 +110,7 @@ metadata:
   namespace: prod
   annotations:
     kubernetes.io/ingress.class: "gce"
-    kubernetes.io/ingress.allow-http: "true"
+    kubernetes.io/ingress.allow-http: "false"
     networking.gke.io/v1beta1.FrontendConfig: application-frontend-config
     kubernetes.io/ingress.global-static-ip-name: spm-gke-alb
 spec:
