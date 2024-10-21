@@ -94,6 +94,7 @@ class WithdrawalService {
       requestedDate,
     };
     const result = await this.withdrawalDb.withdrawRequest(document);
+
     if (!result) {
       return null;
     }

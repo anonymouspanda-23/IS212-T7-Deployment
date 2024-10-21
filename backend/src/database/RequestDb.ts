@@ -40,10 +40,10 @@ class RequestDb {
   public async updateRequestinitiatedWithdrawalValue(
     requestId: number,
   ): Promise<boolean> {
-    const { modifiedCount } = await Request.updateOne({
-      requestId,
-      initiatedWithdrawal: true,
-    });
+    const { modifiedCount } = await Request.updateOne(
+      { requestId, initiatedWithdrawal: false },
+      { $set: { initiatedWithdrawal: true } },
+    );
 
     return modifiedCount > 0;
   }
