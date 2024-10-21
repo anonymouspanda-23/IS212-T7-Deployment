@@ -85,7 +85,7 @@ spec:
     app: backend-deployment
   ports:
     - protocol: TCP
-      port: 3000
+      port: 3001
       targetPort: 3001
   type: NodePort
 
@@ -111,7 +111,7 @@ spec:
               service:
                 name: backend-service
                 port:
-                  number: 3000
+                  number: 3001
 
 ---
 apiVersion: cloud.google.com/v1
