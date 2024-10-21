@@ -33,7 +33,7 @@ describe("EmployeeService", () => {
     // Act
     const result = await employeeService.getEmployeeByEmail(
       staffEmail,
-      inputPassword
+      inputPassword,
     );
 
     // Assert
@@ -53,7 +53,7 @@ describe("EmployeeService", () => {
     // Act
     const result = await employeeService.getEmployeeByEmail(
       staffEmail,
-      inputPassword
+      inputPassword,
     );
 
     // Assert
@@ -76,10 +76,163 @@ describe("EmployeeService", () => {
     // Act
     const result = await employeeService.getEmployeeByEmail(
       staffEmail,
-      inputPassword
+      inputPassword,
     );
 
     // Assert
     expect(result).toEqual(errMsg.WRONG_PASSWORD);
+  });
+});
+
+describe("getRoleOneOrThreeEmployees", () => {
+  let employeeService: EmployeeService;
+
+  let employeeDbMock: any;
+
+  beforeEach(() => {
+    employeeDbMock = {
+      getRoleOneOrThreeEmployees: jest.fn(),
+    };
+
+    employeeService = new EmployeeService(employeeDbMock);
+  });
+
+  it("should return the list of employees with role one or three", async () => {
+    const mockEmployees = [
+      { id: 1, name: "Alice", role: 1 },
+      { id: 2, name: "Bob", role: 3 },
+    ];
+
+    employeeDbMock.getRoleOneOrThreeEmployees.mockResolvedValue(mockEmployees);
+
+    const result = await employeeService.getRoleOneOrThreeEmployees();
+    expect(result).toEqual(mockEmployees);
+  });
+
+  it("should return an empty array if no employees are found", async () => {
+    employeeDbMock.getRoleOneOrThreeEmployees.mockResolvedValue([]);
+
+    const result = await employeeService.getRoleOneOrThreeEmployees();
+    expect(result).toEqual([]);
+  });
+
+  it("should call getRoleOneOrThreeEmployees from employeeDb", async () => {
+    await employeeService.getRoleOneOrThreeEmployees();
+    expect(employeeDbMock.getRoleOneOrThreeEmployees).toHaveBeenCalled();
+  });
+});
+
+describe("getAllDeptTeamCount", () => {
+  let employeeService: EmployeeService;
+  let employeeDbMock: any;
+
+  beforeEach(() => {
+    employeeDbMock = {
+      getAllDeptTeamCount: jest.fn(),
+    };
+
+    employeeService = new EmployeeService(employeeDbMock);
+  });
+
+  it("should return the department team count", async () => {
+    const mockDeptCount = [
+      { dept: "Sales", count: 10 },
+      { dept: "Engineering", count: 5 },
+    ];
+
+    employeeDbMock.getAllDeptTeamCount.mockResolvedValue(mockDeptCount);
+
+    const result = await employeeService.getAllDeptTeamCount();
+    expect(result).toEqual(mockDeptCount);
+  });
+
+  it("should return an empty array if no department counts are found", async () => {
+    employeeDbMock.getAllDeptTeamCount.mockResolvedValue([]);
+
+    const result = await employeeService.getAllDeptTeamCount();
+    expect(result).toEqual([]);
+  });
+
+  it("should call getAllDeptTeamCount from employeeDb", async () => {
+    await employeeService.getAllDeptTeamCount();
+    expect(employeeDbMock.getAllDeptTeamCount).toHaveBeenCalled();
+  });
+});
+
+describe("getDeptByManager", () => {
+  let employeeService: EmployeeService;
+  let employeeDbMock: any;
+
+  beforeEach(() => {
+    employeeDbMock = {
+      getDeptByManager: jest.fn(),
+    };
+
+    employeeService = new EmployeeService(employeeDbMock);
+  });
+
+  it("should return the department by manager", async () => {
+    const staffId = 1;
+    const mockDept = { dept: "Sales", managerId: staffId };
+
+    employeeDbMock.getDeptByManager.mockResolvedValue(mockDept);
+
+    const result = await employeeService.getDeptByManager(staffId);
+    expect(result).toEqual(mockDept);
+  });
+
+  it("should return null if no department is found", async () => {
+    const staffId = 2;
+
+    employeeDbMock.getDeptByManager.mockResolvedValue(null);
+
+    const result = await employeeService.getDeptByManager(staffId);
+    expect(result).toBeNull();
+  });
+
+  it("should call getDeptByManager from employeeDb with correct staffId", async () => {
+    const staffId = 3;
+
+    await employeeService.getDeptByManager(staffId);
+    expect(employeeDbMock.getDeptByManager).toHaveBeenCalledWith(staffId);
+  });
+});
+
+describe("getEmployee", () => {
+  let employeeService: EmployeeService;
+  let employeeDbMock: any;
+
+  beforeEach(() => {
+    employeeDbMock = {
+      getEmployee: jest.fn(),
+    };
+
+    employeeService = new EmployeeService(employeeDbMock);
+  });
+
+  it("should return the employee details for a valid staffId", async () => {
+    const staffId = 1;
+    const mockEmployee = { id: staffId, name: "Alice", role: 1 };
+
+    employeeDbMock.getEmployee.mockResolvedValue(mockEmployee);
+
+    const result = await employeeService.getEmployee(staffId);
+    expect(result).toEqual(mockEmployee);
+  });
+
+  it("should return null if no employee is found", async () => {
+    const staffId = 2;
+
+    employeeDbMock.getEmployee.mockResolvedValue(null);
+
+    const result = await employeeService.getEmployee(staffId);
+    expect(result).toBeNull();
+  });
+
+  it("should call getEmployee from employeeDb with correct staffId", async () => {
+    const staffId = 3;
+
+    await employeeService.getEmployee(staffId);
+    expect(employeeDbMock.getEmployee).toHaveBeenCalledWith(staffId);
   });
 });

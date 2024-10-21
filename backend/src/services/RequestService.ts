@@ -225,11 +225,6 @@ class RequestService {
     return schedule;
   }
 
-  public async getCompanySchedule() {
-    const companySchedule = await this.requestDb.getCompanySchedule();
-    return companySchedule;
-  }
-
   public async getPendingOrApprovedRequests(myId: number) {
     const requests = await this.requestDb.getPendingOrApprovedRequests(myId);
     return requests;

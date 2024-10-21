@@ -1,4 +1,3 @@
-import { Dept } from "@/helpers";
 import Log from "@/models/Log";
 
 class LogDb {
@@ -55,36 +54,6 @@ class LogDb {
     }, {});
 
     return formattedLogs;
-  }
-
-  public async getLogsByDept(dept: Dept) {
-    const deptLogs = await Log.find(
-      {
-        dept,
-      },
-      "-_id -updatedAt",
-    );
-    return deptLogs;
-  }
-
-  public async getLogsByStaffId(staffId: number) {
-    const staffLogs = await Log.find(
-      {
-        performedBy: staffId,
-      },
-      "-_id -updatedAt",
-    );
-    return staffLogs;
-  }
-
-  public async getLogsByRequestId(requestId: number) {
-    const logs = await Log.find(
-      {
-        requestId,
-      },
-      "-_id -updatedAt",
-    );
-    return logs;
   }
 }
 

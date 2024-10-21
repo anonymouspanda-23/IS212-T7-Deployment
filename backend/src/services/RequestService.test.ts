@@ -2,7 +2,13 @@ import UtilsController from "@/controllers/UtilsController";
 import EmployeeDb from "@/database/EmployeeDb";
 import LogDb from "@/database/LogDb";
 import RequestDb from "@/database/RequestDb";
-import { AccessControl, errMsg, HttpStatusResponse } from "@/helpers";
+import {
+  AccessControl,
+  Action,
+  errMsg,
+  HttpStatusResponse,
+  Role,
+} from "@/helpers";
 import { initializeCounter } from "@/helpers/counter";
 import * as dateUtils from "@/helpers/date";
 import { dayWeekAfter } from "@/helpers/unitTestFunctions";
@@ -584,50 +590,342 @@ describe("get pending requests", () => {
   });
 });
 
-// describe("get schedules", () => {
-//   let requestService: RequestService;
-//   let requestDbMock: jest.Mocked<RequestDb>;
-//   let mockEmployee: any;
-//   let employeeDbMock: EmployeeDb;
-//   let employeeServiceMock: jest.Mocked<EmployeeService>;
+describe("get my schedule", () => {
+  let requestService: RequestService;
+  let logServiceMock: any;
+  let employeeServiceMock: any;
+  let requestDbMock: any;
+  let reassignmentServiceMock: any;
 
-//   beforeEach(() => {
-//     requestDbMock = new RequestDb() as jest.Mocked<RequestDb>;
-//     employeeDbMock = new EmployeeDb() as jest.Mocked<EmployeeDb>;
-//     employeeServiceMock = new EmployeeService(
-//       employeeDbMock,
-//     ) as jest.Mocked<EmployeeService>;
-//     requestService = new RequestService(employeeServiceMock, requestDbMock);
-//     mockEmployee = generateMockEmployee();
+  beforeEach(() => {
+    employeeServiceMock = {
+      getEmployee: jest.fn(),
+    };
+    requestDbMock = {
+      getMySchedule: jest.fn(),
+    };
 
-//     /**
-//      * Mock Database Calls
-//      */
-//     requestDbMock.getTeamSchedule = jest.fn();
-//     requestDbMock.getDeptSchedule = jest.fn();
-//     requestDbMock.getCompanySchedule = jest.fn();
+    requestService = new RequestService(
+      logServiceMock,
+      employeeServiceMock,
+      requestDbMock,
+      reassignmentServiceMock,
+    );
+  });
 
-//     jest.resetAllMocks();
-//   });
+  it("should return USER_DOES_NOT_EXIST when employee does not exist", async () => {
+    const myId = 1;
+    employeeServiceMock.getEmployee.mockResolvedValue(null);
 
-//   it("should return team schedule", async () => {
-//     const { staffId } = mockEmployee;
-//     requestDbMock.getTeamSchedule.mockResolvedValue(
-//       mockRequestData.APPROVED as any,
-//     );
-//     const result = await requestService.getSchedule(staffId);
-//     expect(result).toEqual(mockRequestData.APPROVED as any);
-//   });
+    const result = await requestService.getMySchedule(myId);
+    expect(result).toBe(errMsg.USER_DOES_NOT_EXIST);
+  });
 
-//   it("should return department schedule", async () => {
-//     const { staffId } = mockEmployee;
-//     requestDbMock.getDeptSchedule.mockResolvedValue(
-//       mockRequestData.APPROVED as any,
-//     );
-//     const result = await requestService.getSchedule(staffId);
-//     expect(result).toEqual(mockRequestData.APPROVED as any);
-//   });
-// });
+  it("should return REQUESTS_NOT_FOUND when no schedule is found", async () => {
+    const myId = 1;
+    employeeServiceMock.getEmployee.mockResolvedValue({ id: myId });
+    requestDbMock.getMySchedule.mockResolvedValue([]);
+
+    const result = await requestService.getMySchedule(myId);
+    expect(result).toBe(errMsg.REQUESTS_NOT_FOUND);
+  });
+
+  it("should return the schedule when found", async () => {
+    const myId = 1;
+    const mockSchedule = [{ id: 1, date: "2024-10-21", task: "Meeting" }];
+    employeeServiceMock.getEmployee.mockResolvedValue({ id: myId });
+    requestDbMock.getMySchedule.mockResolvedValue(mockSchedule);
+
+    const result = await requestService.getMySchedule(myId);
+    expect(result).toEqual(mockSchedule);
+  });
+});
+
+describe("update request initiatedWithdrawal vlue", () => {
+  let requestService: RequestService;
+  let logServiceMock: any;
+  let employeeServiceMock: any;
+  let requestDbMock: any;
+  let reassignmentServiceMock: any;
+
+  beforeEach(() => {
+    employeeServiceMock = {
+      getEmployee: jest.fn(),
+    };
+    requestDbMock = {
+      updateRequestinitiatedWithdrawalValue: jest.fn(),
+    };
+
+    requestService = new RequestService(
+      logServiceMock,
+      employeeServiceMock,
+      requestDbMock,
+      reassignmentServiceMock,
+    );
+  });
+
+  it("should update the withdrawal value and return the result", async () => {
+    const requestId = 1;
+    const mockUpdateResult = { success: true };
+
+    requestDbMock.updateRequestinitiatedWithdrawalValue.mockResolvedValue(
+      mockUpdateResult,
+    );
+
+    const result =
+      await requestService.updateRequestinitiatedWithdrawalValue(requestId);
+
+    expect(result).toEqual(mockUpdateResult);
+    expect(
+      requestDbMock.updateRequestinitiatedWithdrawalValue,
+    ).toHaveBeenCalledWith(requestId);
+  });
+
+  it("should handle error scenarios when update fails", async () => {
+    const requestId = 2;
+    const mockError = new Error("Update failed");
+
+    requestDbMock.updateRequestinitiatedWithdrawalValue.mockRejectedValue(
+      mockError,
+    );
+
+    await expect(
+      requestService.updateRequestinitiatedWithdrawalValue(requestId),
+    ).rejects.toThrow("Update failed");
+    expect(
+      requestDbMock.updateRequestinitiatedWithdrawalValue,
+    ).toHaveBeenCalledWith(requestId);
+  });
+});
+
+describe("get schedule", () => {
+  let requestService: RequestService;
+  let logServiceMock: any;
+  let employeeServiceMock: any;
+  let requestDbMock: any;
+  let reassignmentServiceMock: any;
+
+  beforeEach(() => {
+    logServiceMock = {
+      logRequestHelper: jest.fn(),
+    };
+
+    employeeServiceMock = {
+      getEmployee: jest.fn(),
+      getAllDeptTeamCount: jest.fn(),
+    };
+
+    requestDbMock = {
+      getAllDeptSchedule: jest.fn(),
+      getTeamSchedule: jest.fn(),
+    };
+
+    reassignmentServiceMock = {
+      getActiveReassignmentAsTempManager: jest.fn(),
+    };
+
+    requestService = new RequestService(
+      logServiceMock,
+      employeeServiceMock,
+      requestDbMock,
+      reassignmentServiceMock,
+    );
+  });
+
+  it("should return USER_DOES_NOT_EXIST when employee does not exist", async () => {
+    const staffId = 1;
+    employeeServiceMock.getEmployee.mockResolvedValue(null);
+
+    const result = await requestService.getSchedule(staffId);
+
+    expect(result).toBe(errMsg.USER_DOES_NOT_EXIST);
+  });
+
+  it("should return schedule for manager or HR", async () => {
+    const staffId = 2;
+    const employee = {
+      role: Role.Manager,
+      position: "Manager",
+      reportingManager: 3,
+      dept: "Sales",
+      staffFName: "John",
+      staffLName: "Doe",
+      reportingManagerName: "Jane Smith",
+    };
+
+    const allDeptTeamCount = {
+      Sales: {
+        teams: {
+          Manager: [],
+        },
+      },
+    };
+
+    const wfhStaff = {
+      Sales: [],
+    };
+
+    const activeReassignment = {
+      active: true,
+      originalManagerDept: "Sales",
+    };
+
+    employeeServiceMock.getEmployee.mockResolvedValue(employee);
+    employeeServiceMock.getAllDeptTeamCount.mockResolvedValue(allDeptTeamCount);
+    requestDbMock.getAllDeptSchedule.mockResolvedValue(wfhStaff);
+    reassignmentServiceMock.getActiveReassignmentAsTempManager.mockResolvedValue(
+      activeReassignment,
+    );
+
+    const result = await requestService.getSchedule(staffId);
+
+    expect(result).toEqual({
+      Sales: {
+        teams: {
+          Manager: [],
+        },
+        wfhStaff: [],
+        isTempTeam: true,
+      },
+    });
+
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
+      performedBy: staffId,
+      requestType: "APPLICATION",
+      action: Action.RETRIEVE,
+      staffName: "John Doe",
+      dept: "Sales",
+      position: "Manager",
+    });
+  });
+
+  it("should return schedule for regular staff", async () => {
+    const staffId = 3;
+    const employee = {
+      role: Role.Staff,
+      position: "Sales Rep",
+      reportingManager: 4,
+      dept: "Sales",
+      staffFName: "Alice",
+      staffLName: "Johnson",
+      reportingManagerName: "Bob Brown",
+    };
+
+    const allDeptTeamCount = {
+      Sales: {
+        teams: {
+          "Sales Rep": [],
+        },
+      },
+    };
+
+    const wfhStaff: any = [];
+
+    employeeServiceMock.getEmployee.mockResolvedValue(employee);
+    employeeServiceMock.getAllDeptTeamCount.mockResolvedValue(allDeptTeamCount);
+    requestDbMock.getTeamSchedule.mockResolvedValue(wfhStaff);
+
+    const result = await requestService.getSchedule(staffId);
+
+    expect(result).toEqual({
+      Sales: {
+        teams: {
+          "Sales Rep": [],
+        },
+        wfhStaff: [],
+      },
+    });
+
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
+      performedBy: staffId,
+      requestType: "APPLICATION",
+      action: Action.RETRIEVE,
+      staffName: "Alice Johnson",
+      reportingManagerId: 4,
+      managerName: "Bob Brown",
+      dept: "Sales",
+      position: "Sales Rep",
+    });
+  });
+});
+
+describe("get approved request by requestId", () => {
+  let requestService: RequestService;
+  let logServiceMock: any;
+  let employeeServiceMock: any;
+  let requestDbMock: any;
+  let reassignmentServiceMock: any;
+
+  beforeEach(() => {
+    logServiceMock = {
+      logRequestHelper: jest.fn(),
+    };
+
+    employeeServiceMock = {
+      getEmployee: jest.fn(),
+    };
+
+    requestDbMock = {
+      getApprovedRequestByRequestId: jest.fn(),
+    };
+
+    reassignmentServiceMock = {
+      getActiveReassignmentAsTempManager: jest.fn(),
+    };
+
+    requestService = new RequestService(
+      logServiceMock,
+      employeeServiceMock,
+      requestDbMock,
+      reassignmentServiceMock,
+    );
+  });
+
+  it("should return request details when a valid request ID is provided", async () => {
+    const requestId = 1;
+    const mockRequestDetail = { id: requestId, status: "Approved" };
+
+    requestDbMock.getApprovedRequestByRequestId.mockResolvedValue(
+      mockRequestDetail,
+    );
+
+    const result =
+      await requestService.getApprovedRequestByRequestId(requestId);
+
+    expect(result).toEqual(mockRequestDetail);
+    expect(requestDbMock.getApprovedRequestByRequestId).toHaveBeenCalledWith(
+      requestId,
+    );
+  });
+
+  it("should return null or undefined if no request is found for the given request ID", async () => {
+    const requestId = 2;
+
+    requestDbMock.getApprovedRequestByRequestId.mockResolvedValue(null);
+
+    const result =
+      await requestService.getApprovedRequestByRequestId(requestId);
+
+    expect(result).toBeNull();
+    expect(requestDbMock.getApprovedRequestByRequestId).toHaveBeenCalledWith(
+      requestId,
+    );
+  });
+
+  it("should handle errors when the request database call fails", async () => {
+    const requestId = 3;
+    const mockError = new Error("Database error");
+
+    requestDbMock.getApprovedRequestByRequestId.mockRejectedValue(mockError);
+
+    await expect(
+      requestService.getApprovedRequestByRequestId(requestId),
+    ).rejects.toThrow("Database error");
+    expect(requestDbMock.getApprovedRequestByRequestId).toHaveBeenCalledWith(
+      requestId,
+    );
+  });
+});
 
 describe("get own pending requests", () => {
   let requestService: RequestService;
@@ -989,5 +1287,68 @@ describe("getPendingRequestByRequestId", () => {
     requestDbMock.getPendingRequestByRequestId.mockResolvedValue(null);
     const result = await requestService.getPendingRequestByRequestId(1044);
     expect(result).toEqual(null);
+  });
+});
+
+describe("setWithdrawnStatus", () => {
+  let requestService: RequestService;
+  let logServiceMock: any;
+  let employeeServiceMock: any;
+  let requestDbMock: any;
+  let reassignmentServiceMock: any;
+
+  beforeEach(() => {
+    logServiceMock = {
+      logRequestHelper: jest.fn(),
+    };
+
+    employeeServiceMock = {
+      getEmployee: jest.fn(),
+    };
+
+    requestDbMock = {
+      setWithdrawnStatus: jest.fn(),
+    };
+
+    reassignmentServiceMock = {
+      getReassignmentActive: jest.fn(),
+    };
+
+    requestService = new RequestService(
+      logServiceMock,
+      employeeServiceMock,
+      requestDbMock,
+      reassignmentServiceMock,
+    );
+  });
+
+  it("should return null if the status update fails", async () => {
+    const requestId = 1;
+
+    requestDbMock.setWithdrawnStatus.mockResolvedValue(null);
+
+    const result = await requestService.setWithdrawnStatus(requestId);
+
+    expect(result).toBeNull();
+  });
+
+  it("should return OK on successful status update", async () => {
+    const requestId = 2;
+
+    requestDbMock.setWithdrawnStatus.mockResolvedValue(true);
+
+    const result = await requestService.setWithdrawnStatus(requestId);
+
+    expect(result).toBe(HttpStatusResponse.OK);
+  });
+
+  it("should call setWithdrawnStatus with the correct requestId", async () => {
+    const requestId = 3;
+
+    requestDbMock.setWithdrawnStatus.mockResolvedValue(true);
+
+    await requestService.setWithdrawnStatus(requestId);
+
+    expect(requestDbMock.setWithdrawnStatus).toHaveBeenCalledWith(requestId);
   });
 });

@@ -148,14 +148,6 @@ class RequestDb {
     return formattedSchedule;
   }
 
-  public async getCompanySchedule() {
-    const request = await Request.find(
-      { status: Status.APPROVED },
-      "-_id -createdAt -updatedAt",
-    );
-    return request;
-  }
-
   public async postRequest(
     document: InsertDocument,
   ): Promise<boolean | number> {
