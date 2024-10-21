@@ -78,6 +78,8 @@ metadata:
   namespace: prod
   labels:
     app: backend-service
+  annotations:
+    cloud.google.com/backend-config: '{"default": "backend-healthcheck-config"}'
 spec:
   selector:
     app: backend-deployment
