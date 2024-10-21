@@ -20,7 +20,7 @@ metadata:
 apiVersion: secrets-store.csi.x-k8s.io/v1
 kind: SecretProviderClass
 metadata:
-  name: CONNECTION_STRING
+  name: conn-str
 spec:
   provider: gke
   parameters:
@@ -56,15 +56,15 @@ spec:
             - containerPort: 3001
           command: ["sh", "-c", "npm run dev"]
           volumeMounts:
-            - name: secret-storage
+            - name: conn-str
               mountPath: /var/secrets
       volumes:
-        - name: secret-storage
+        - name: conn-str
           csi:
             driver: secrets-store-gke.csi.k8s.io
             readOnly: true
             volumeAttributes:
-              secretProviderClass: CONNECTION_STRING
+              secretProviderClass: conn-str
       restartPolicy: Always
 
 # Service for backend Application
