@@ -30,33 +30,33 @@ spec:
         path: ".env"
 
 # Pod
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: backend-pod
-  namespace: prod
-spec:
-  serviceAccountName: spm-service-account
-  containers:
-    - image: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/BACKEND_CONTAINER:SHORT_SHA
-      imagePullPolicy: IfNotPresent
-      name: backend-pod
-      stdin: true
-      stdinOnce: true
-      terminationMessagePath: /dev/termination-log
-      terminationMessagePolicy: File
-      tty: true
-      volumeMounts:
-        - mountPath: "/app"
-          name: mysecret
-  volumes:
-    - name: mysecret
-      csi:
-        driver: secrets-store-gke.csi.k8s.io
-        readOnly: true
-        volumeAttributes:
-          secretProviderClass: env
+#---
+#apiVersion: v1
+#kind: Pod
+#metadata:
+#  name: backend-pod
+#  namespace: prod
+#spec:
+#  serviceAccountName: spm-service-account
+#  containers:
+#    - image: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/BACKEND_CONTAINER:SHORT_SHA
+#      imagePullPolicy: IfNotPresent
+#      name: backend-pod
+#      stdin: true
+#      stdinOnce: true
+#      terminationMessagePath: /dev/termination-log
+#      terminationMessagePolicy: File
+#      tty: true
+#      volumeMounts:
+#        - mountPath: "/app"
+#          name: mysecret
+#  volumes:
+#    - name: mysecret
+#      csi:
+#        driver: secrets-store-gke.csi.k8s.io
+#        readOnly: true
+#        volumeAttributes:
+#          secretProviderClass: env
 
 # Deployment for backend Application
 ---
