@@ -99,7 +99,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "gce"
     kubernetes.io/ingress.allow-http: "true"
-    kubernetes.io/ingress.regional-static-ip-name: " spm-gke-cluster-prod-ip "
+#    kubernetes.io/ingress.regional-static-ip-name: spm-gke-cluster-prod-ip
 spec:
   defaultBackend:
     service:
