@@ -80,6 +80,7 @@ const App = () => {
       </Title>
     </div>
   );
+
   return (
     <BrowserRouter>
       <ColorModeContextProvider>

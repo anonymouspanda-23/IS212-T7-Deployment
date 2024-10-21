@@ -14,6 +14,7 @@ import {
   Statistic,
   Table,
   Typography,
+  message,
 } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -33,12 +34,13 @@ export const IncomingList: React.FC = () => {
   const [filteredData, setFilteredData] = useState<DataSourceItem[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentPost, setCurrentPost] = useState<DataSourceItem | null>(null);
-  const [, setPendingCount] = usePendingCount();
   const [filterStatus, setFilterStatus] = useState<string | undefined>(
     undefined,
   );
-  const [description, setDescription] = useState<string>(""); // New state for description
-  const [showDescription, setShowDescription] = useState<boolean>(false); // New state for description visibility
+  const [description, setDescription] = useState<string>("");
+  const [showDescription, setShowDescription] = useState<boolean>(false);
+  const [selectedStatus, setSelectedStatus] = useState(currentPost?.status);
+  const { pendingCount, fetchPendingRequests } = usePendingCount();
 
   const fetchRequests = async (staffId: any) => {
     try {
@@ -58,12 +60,14 @@ export const IncomingList: React.FC = () => {
         APPROVED: "Approved",
         REJECTED: "Rejected",
         EXPIRED: "Expired",
+        WITHDRAWN: "Withdrawn",
+        REVOKED: "Revoked",
       };
 
       const pendingRequests = response.data.map((request: any) => ({
         id: request.staffId,
         name: request.staffName,
-        email: `${request.staffName}@example.com`, // Assuming email can be derived or added
+        email: `${request.staffName}@example.com`,
         role: request.requestType,
         date: new Date(request.requestedDate).toLocaleDateString(),
         department: request.dept,
@@ -73,12 +77,6 @@ export const IncomingList: React.FC = () => {
         staffId: request.staffId,
       }));
 
-      // Update the global count of pending requests
-      const pendingCount = pendingRequests.filter(
-        (request: { status: string; }) => request.status === "Pending",
-      ).length;
-
-      setPendingCount(pendingCount);
       setDataSource(pendingRequests);
       setFilteredData(pendingRequests);
     } catch (error) {
@@ -91,9 +89,8 @@ export const IncomingList: React.FC = () => {
     if (staffId) {
       fetchRequests(staffId);
     }
-  }, [user?.staffId]); // Dependency array includes staffId to re-fetch when it changes
+  }, [user?.staffId]);
 
-  // Filter data based on selected status
   useEffect(() => {
     if (filterStatus) {
       setFilteredData(
@@ -104,7 +101,15 @@ export const IncomingList: React.FC = () => {
     }
   }, [filterStatus, dataSource]);
 
-  // Function to calculate the count of requests based on status
+  useEffect(() => {
+    setSelectedStatus(currentPost?.status);
+  }, [currentPost]);
+
+  const handleStatusChange = (value: string) => {
+    setSelectedStatus(value);
+    setShowDescription(value === "Rejected" || value === "Revoked");
+  };
+
   const getStatusCounts = () => {
     if (!Array.isArray(dataSource)) {
       console.error("dataSource is not an array:", dataSource);
@@ -113,6 +118,8 @@ export const IncomingList: React.FC = () => {
         approved: 0,
         expired: 0,
         rejected: 0,
+        withdrawn: 0,
+        revoked: 0,
       };
     }
 
@@ -129,10 +136,16 @@ export const IncomingList: React.FC = () => {
       rejected: dataSource.filter(
         (post) => post.status.toLowerCase() === "rejected",
       ).length,
+      revoked: dataSource.filter(
+        (post) => post.status.toLowerCase() === "revoked",
+      ).length,
+      withdrawn: dataSource.filter(
+        (post) => post.status.toLowerCase() === "withdrawn",
+      ).length,
     };
   };
 
-  const counts = getStatusCounts(); // Get the current counts for each status
+  const counts = getStatusCounts();
 
   const handleEditClick = (post: any) => {
     setCurrentPost(post);
@@ -153,66 +166,78 @@ export const IncomingList: React.FC = () => {
       ...values,
       description: description || undefined,
     };
-
     try {
-      // Check if the status is "Approved" or "Rejected"
-      if (values.status === "Approved") {
-        const response = await axios.post(
-          `${backendUrl}/api/v1/approveRequest`,
-          {
+      const confirmAction = async () => {
+        if (values.status === "Approved") {
+          await axios.post(`${backendUrl}/api/v1/approveRequest`, {
             requestId: currentPost?.requestId,
             performedBy: currentPost?.reportingManager,
-          },
-        );
-      } else if (values.status === "Rejected") {
-        const response = await axios.post(
-          `${backendUrl}/api/v1/rejectRequest`,
-          {
+          });
+          message.success("Request approved successfully");
+        } else if (values.status === "Rejected") {
+          await axios.post(`${backendUrl}/api/v1/rejectRequest`, {
             requestId: currentPost?.requestId,
             performedBy: currentPost?.reportingManager,
             reason: description,
-          },
+          });
+          message.success("Request has been rejected");
+        } else if (values.status === "Revoked") {
+          await axios.post(`${backendUrl}/api/v1/revokeRequest`, {
+            requestId: currentPost?.requestId,
+            performedBy: currentPost?.reportingManager,
+            reason: description,
+          });
+          message.success("Request revoked successfully");
+        }
+
+        await fetchRequests(user?.staffId);
+
+        const updatedDataSource = dataSource.map((post) =>
+          post.requestId === currentPost?.requestId
+            ? {
+                ...updatedPost,
+                status:
+                  values.status === "Approved"
+                    ? "Approved"
+                    : values.status === "Rejected"
+                      ? "Rejected"
+                      : values.status === "Revoked"
+                        ? "Revoked"
+                        : post.status,
+              }
+            : post,
         );
-      }
 
-      // Re-fetch requests to get the latest status after approval or rejection
-      await fetchRequests(user?.staffId); // Await this to ensure the data is fetched before updating state
+        setDataSource(updatedDataSource);
+        setFilteredData(
+          updatedDataSource.filter(
+            (post) => !filterStatus || post.status === filterStatus,
+          ),
+        );
+      };
 
-      // Update the current post status
-      const updatedDataSource = dataSource.map((post) =>
-        post.requestId === currentPost?.requestId // Use requestId for matching
-          ? {
-              ...updatedPost,
-              status: values.status === "Approved" ? "Approved" : "Rejected",
-            }
-          : post,
-      );
-
-      // Update state to show the new data in the table
-      setDataSource(updatedDataSource);
-      setFilteredData(
-        updatedDataSource.filter(
-          (post) => !filterStatus || post.status === filterStatus,
-        ),
-      );
+      Modal.confirm({
+        title: `Confirm ${values.status}`,
+        content: `Are you sure you want to ${values.status.toLowerCase()} this request?`,
+        onOk: confirmAction,
+      });
     } catch (error) {
       console.error("Error processing request:", error);
+      message.error(`Error ${values.status.toLowerCase()}ing request.`);
     }
 
-    // Close the modal and reset state
     setModalVisible(false);
     setCurrentPost(null);
     setDescription("");
     setShowDescription(false);
+    await fetchPendingRequests();
   };
 
   return (
     <List>
-      <Typography.Title level={3}>Approve/Reject WFH Requests</Typography.Title>
-
-      {/* Row for Animated Status Counts */}
+      <Typography.Title level={5}>Approve/Reject WFH Requests</Typography.Title>
       <Row gutter={16}>
-        <Col span={6}>
+        <Col span={4}>
           <Card bordered={true} style={{ borderColor: "lightblue" }}>
             <Statistic
               title="Pending"
@@ -221,7 +246,7 @@ export const IncomingList: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col span={4}>
           <Card bordered={false}>
             <Statistic
               title="Approved"
@@ -230,16 +255,7 @@ export const IncomingList: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={6}>
-          <Card bordered={false}>
-            <Statistic
-              title="Expired"
-              value={counts.expired}
-              formatter={formatter}
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
+        <Col span={4}>
           <Card bordered={false}>
             <Statistic
               title="Rejected"
@@ -248,9 +264,35 @@ export const IncomingList: React.FC = () => {
             />
           </Card>
         </Col>
+        <Col span={4}>
+          <Card bordered={false}>
+            <Statistic
+              title="Expired"
+              value={counts.expired}
+              formatter={formatter}
+            />
+          </Card>
+        </Col>
+        <Col span={4}>
+          <Card bordered={false}>
+            <Statistic
+              title="Withdrawn"
+              value={counts.withdrawn}
+              formatter={formatter}
+            />
+          </Card>
+        </Col>
+        <Col span={4}>
+          <Card bordered={false}>
+            <Statistic
+              title="Revoked"
+              value={counts.revoked}
+              formatter={formatter}
+            />
+          </Card>
+        </Col>
       </Row>
 
-      {/* Filter by status */}
       <Select
         placeholder="Filter by status"
         style={{ width: 200, marginBottom: 16, float: "right", marginTop: 50 }}
@@ -263,9 +305,10 @@ export const IncomingList: React.FC = () => {
         <Select.Option value="Approved">Approved</Select.Option>
         <Select.Option value="Expired">Expired</Select.Option>
         <Select.Option value="Rejected">Rejected</Select.Option>
+        <Select.Option value="Withdrawn">Withdrawn</Select.Option>
+        <Select.Option value="Revoked">Revoked</Select.Option>
       </Select>
 
-      {/* Table */}
       <Table dataSource={filteredData} rowKey="requestId" pagination={false}>
         <Table.Column dataIndex="requestId" title="Request ID." />
         <Table.Column dataIndex="name" title="Name" />
@@ -285,8 +328,12 @@ export const IncomingList: React.FC = () => {
                   : value === "Approved"
                     ? "green"
                     : value === "Expired"
-                      ? "red"
-                      : "orange"
+                      ? "grey"
+                      : value === "Withdrawn"
+                        ? "orange"
+                        : value === "Rejected"
+                          ? "red"
+                          : "pink"
               }
             />
           )}
@@ -295,8 +342,10 @@ export const IncomingList: React.FC = () => {
           dataIndex="action"
           title="Action"
           render={(value: string, record: any) =>
-            record.status === "Pending" ? (
-              <Button onClick={() => handleEditClick(record)}>Edit</Button>
+            record.status === "Approved" || record.status === "Pending" ? (
+              <Button onClick={() => handleEditClick(record)}>
+                {record.status === "Pending" ? "Edit" : "Revoke"}
+              </Button>
             ) : (
               <TagField value="Not-editable" color="grey" />
             )
@@ -304,9 +353,12 @@ export const IncomingList: React.FC = () => {
         />
       </Table>
 
-      {/* Modal for Editing */}
       <Modal
-        title="Approve/Reject"
+        title={
+          currentPost?.status === "Pending"
+            ? "Approve/Reject"
+            : "Revoke Approved Request"
+        }
         open={modalVisible}
         onCancel={handleModalClose}
         footer={null}
@@ -332,22 +384,30 @@ export const IncomingList: React.FC = () => {
               name="status"
               rules={[{ required: true, message: "Status is required" }]}
             >
-              <Select
-                onChange={(value) => setShowDescription(value === "Rejected")}
-              >
-                <Select.Option value="Pending">Pending</Select.Option>
-                <Select.Option value="Approved">Approved</Select.Option>
-                <Select.Option value="Rejected">Rejected</Select.Option>
+              <Select onChange={handleStatusChange}>
+                {currentPost.status === "Pending" && (
+                  <>
+                    <Select.Option value="Pending">Pending</Select.Option>
+                    <Select.Option value="Approved">Approve</Select.Option>
+                    <Select.Option value="Rejected">Reject</Select.Option>
+                  </>
+                )}
+                {currentPost.status === "Approved" && (
+                  <>
+                    <Select.Option value="Approved">Approve</Select.Option>
+                    <Select.Option value="Revoked">Revoke</Select.Option>
+                  </>
+                )}
               </Select>
             </Form.Item>
             {showDescription && (
               <Form.Item
-                label="Description"
+                label="Reason"
                 name="description"
                 rules={[
                   {
                     required: showDescription,
-                    message: "Description is required for rejected status.",
+                    message: "Reason is required.",
                   },
                 ]}
               >
@@ -359,8 +419,17 @@ export const IncomingList: React.FC = () => {
               </Form.Item>
             )}
             <Form.Item>
-              <Button type="primary" htmlType="submit">
-                Save
+              <Button
+                type="primary"
+                danger={currentPost.status === "Approved"}
+                htmlType="submit"
+                disabled={
+                  (currentPost.status === "Pending" ||
+                    currentPost.status === "Approved") &&
+                  selectedStatus === currentPost.status
+                }
+              >
+                {currentPost.status === "Pending" ? "Save" : "Revoke"}
               </Button>
             </Form.Item>
           </Form>
