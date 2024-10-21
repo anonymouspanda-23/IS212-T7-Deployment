@@ -110,3 +110,18 @@ spec:
                 name: backend-service
                 port:
                   number: 3000
+
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: backend-healthcheck-config
+  namespace: prod
+  labels:
+    app: backend-service
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    port: 3001
+    type: HTTP
+    requestPath: /api/v1
