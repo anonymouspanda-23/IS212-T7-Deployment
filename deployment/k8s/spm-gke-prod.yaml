@@ -38,7 +38,6 @@ metadata:
   labels:
     app: backend-deployment
 spec:
-  serviceAccountName: spm-service-account
   replicas: 1
   selector:
     matchLabels:
