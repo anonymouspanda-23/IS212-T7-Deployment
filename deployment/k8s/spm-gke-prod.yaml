@@ -20,13 +20,13 @@ metadata:
 apiVersion: secrets-store.csi.x-k8s.io/v1
 kind: SecretProviderClass
 metadata:
-  name: conn-str
+  name: env
 spec:
   provider: gke
   parameters:
     secrets: |
-      - resourceName: "projects/PROJECT_ID/secrets/CONNECTION_STRING/versions/1"
-        path: "conn-str.txt"
+      - resourceName: "projects/PROJECT_ID/secrets/env/versions/1"
+        path: ".env"
 
 # Deployment for backend Application
 ---
@@ -56,15 +56,15 @@ spec:
             - containerPort: 3001
           command: ["sh", "-c", "npm run dev"]
           volumeMounts:
-            - name: conn-str
-              mountPath: /var/secrets
+            - name: env
+              mountPath: /app
       volumes:
-        - name: conn-str
+        - name: env
           csi:
             driver: secrets-store-gke.csi.k8s.io
             readOnly: true
             volumeAttributes:
-              secretProviderClass: conn-str
+              secretProviderClass: env
       restartPolicy: Always
 
 # Service for backend Application
