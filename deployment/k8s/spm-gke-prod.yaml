@@ -1,0 +1,91 @@
+# backend Deployment File
+
+# ServiceAccount for cluster
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spm-service-account
+  namespace: prod
+
+# Namespace for backend
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prod
+
+# Deployment for backend Application
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: prod
+  labels:
+    app: backend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-deployment
+  template:
+    metadata:
+      name: backend-deployment
+      labels:
+        app: backend-deployment
+    spec:
+      containers:
+        - name: backend-container
+          image: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/BACKEND_CONTAINER:SHORT_SHA
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3001
+          command: ["sh", "-c", "npm run dev"]
+          resources:
+            limits:
+              memory: "100Mi"
+              cpu: "100m"
+      restartPolicy: Always
+
+# Service for backend Application
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: prod
+  labels:
+    app: backend-service
+spec:
+  selector:
+    app: backend-deployment
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3001
+  type: NodePort
+
+# Ingress for backend Application.
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  namespace: prod
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.allow-http: "true"
+    kubernetes.io/ingress.global-static-ip-name: spm-gke-cluster-prod-ip
+spec:
+  rules:
+    - host: lurence.org
+    - http:
+        paths:
+          - path: "/*"
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 3000
