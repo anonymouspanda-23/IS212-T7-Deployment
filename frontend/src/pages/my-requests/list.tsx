@@ -8,6 +8,7 @@ import { useCustomNotificationProvider } from "@/components/toast";
 import { ModalProvider, useModal } from "@/components/modal";
 import { Box } from "@chakra-ui/react";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
+import { Status } from "@/helper/requestLogsVar";
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -15,6 +16,10 @@ const { TabPane } = Tabs;
 export const MyRequestsContent = () => {
   const { data: user } = useGetIdentity<EmployeeJWT>();
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [approvedRequests, setApprovedRequests] = useState([]);
+  const [rejectedRequests, setRejectedRequests] = useState([]);
+  const [withdrawnRequests, setWithdrawnRequests] = useState([]);
+  const [revokedRequests, setRevokedRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const toast = useCustomNotificationProvider();
   const { openModal, closeModal } = useModal();
@@ -29,23 +34,86 @@ export const MyRequestsContent = () => {
 
   const fetchRequests = async (staffId: any) => {
     try {
-      const response = await axios.get(
+      const pendingResponse = await axios.get(
         `${backendUrl}/api/v1/getOwnPendingRequests`,
-        {
-          params: { myId: staffId },
-        },
+        { params: { myId: staffId } },
       );
-      const ownPendingRequests = response.data.map((request: any) => ({
+
+      const ownPendingRequests = pendingResponse.data.map((request: any) => ({
         date: formatDate(new Date(request.requestedDate)),
         type: request.requestType,
         appliedDate: formatDate(new Date(request.createdAt)),
         reason: request.reason,
         id: request.requestId,
+        status: "PENDING",
+        initiatedWithdrawal: request.initiatedWithdrawal,
       }));
 
       setPendingRequests(ownPendingRequests);
+
+      const scheduleResponse = await axios.get(
+        `${backendUrl}/api/v1/getMySchedule`,
+        { params: { myId: staffId } },
+      );
+
+      const approved = scheduleResponse.data
+        .filter((request: any) => request.status === Status.APPROVED)
+        .map((request: any) => ({
+          date: formatDate(new Date(request.requestedDate)),
+          type: request.requestType,
+          appliedDate: formatDate(new Date(request.createdAt)),
+          reason: request.reason,
+          id: request.requestId,
+          status: "APPROVED",
+          initiatedWithdrawal: request.initiatedWithdrawal,
+        }));
+
+      const rejected = scheduleResponse.data
+        .filter((request: any) => request.status === Status.REJECTED)
+        .map((request: any) => ({
+          date: formatDate(new Date(request.requestedDate)),
+          type: request.requestType,
+          appliedDate: formatDate(new Date(request.createdAt)),
+          reason: request.reason,
+          id: request.requestId,
+          status: "REJECTED",
+          initiatedWithdrawal: request.initiatedWithdrawal,
+        }));
+
+      const withdrawn = scheduleResponse.data
+        .filter((request: any) => request.status === Status.WITHDRAWN)
+        .map((request: any) => ({
+          date: formatDate(new Date(request.requestedDate)),
+          type: request.requestType,
+          appliedDate: formatDate(new Date(request.createdAt)),
+          reason: request.reason,
+          id: request.requestId,
+          status: "WITHDRAWN",
+          initiatedWithdrawal: request.initiatedWithdrawal,
+        }));
+
+      const revoked = scheduleResponse.data
+        .filter((request: any) => request.status === Status.REVOKED)
+        .map((request: any) => ({
+          date: formatDate(new Date(request.requestedDate)),
+          type: request.requestType,
+          appliedDate: formatDate(new Date(request.createdAt)),
+          reason: request.reason,
+          id: request.requestId,
+          status: "REVOKED",
+          initiatedWithdrawal: request.initiatedWithdrawal,
+        }));
+
+      setApprovedRequests(approved);
+      setRejectedRequests(rejected);
+      setWithdrawnRequests(withdrawn);
+      setRevokedRequests(revoked);
     } catch (error) {
-      console.error("Error fetching requests:", error);
+      toast.open({
+        message: "Error",
+        description: "Error fetching requests:",
+        type: "error",
+      });
     }
   };
 
@@ -89,7 +157,7 @@ export const MyRequestsContent = () => {
       );
 
       if (response.status == 200) {
-        fetchRequests(user?.staffId); // Refresh the request list after withdrawal
+        fetchRequests(user?.staffId);
         toast.open({
           message: "Request Cancelled",
           description: "Your request has been cancelled successfully.",
@@ -103,10 +171,81 @@ export const MyRequestsContent = () => {
             "There was a problem cancelling your request. Please try again.",
           type: "error",
         });
-        console.error("Failed to cancel the request.");
+        toast.open({
+          message: "Error",
+          description: "Failed to cancel request",
+          type: "error",
+        });
       }
     } catch (error) {
-      console.error("Error withdrawing request:", error);
+      toast.open({
+        message: "Error",
+        description: "Error cancelling requests:",
+        type: "error",
+      });
+    }
+  };
+
+  const confirmWithdraw = async (requestId: number) => {
+    openModal(
+      "Confirm Withdrawal",
+      <Box textAlign="center">
+        <p>Are you sure you want to withdraw this request?</p>
+      </Box>,
+      <Box display="flex" justifyContent="center" mt="4">
+        <Button
+          style={{
+            backgroundColor: "#52c41a",
+            borderColor: "#52c41a",
+            color: "white",
+          }}
+          onClick={() => handleWithdraw(requestId)}
+        >
+          Yes
+        </Button>
+        <Button
+          type="primary"
+          danger
+          style={{ marginLeft: "20px" }}
+          onClick={() => closeModal()}
+        >
+          No
+        </Button>
+      </Box>,
+    );
+  };
+
+  const handleWithdraw = async (requestId: number) => {
+    try {
+      const response = await axios.post(
+        `${backendUrl}/api/v1/withdrawRequest`,
+        {
+          requestId,
+        },
+      );
+
+      if (response.status === 200) {
+        fetchRequests(user?.staffId);
+        toast.open({
+          message: "Request Withdrawn",
+          description: "Your request has been successfully withdrawn.",
+          type: "success",
+        });
+        closeModal();
+      } else {
+        toast.open({
+          message: "Withdrawal Failed",
+          description:
+            "There was an issue withdrawing your request. Please try again.",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      toast.open({
+        message: "Error",
+        description: "An error occurred while withdrawing your request.",
+        type: "error",
+      });
     }
   };
 
@@ -150,11 +289,27 @@ export const MyRequestsContent = () => {
     {
       title: "Action",
       key: "action",
-      render: (_: any, request: any) => (
-        <Button type="primary" danger onClick={() => cancelRequest(request.id)}>
-          Cancel
-        </Button>
-      ),
+      render: (_: any, request: any, index: number) => {
+        if (request.status === Status.PENDING) {
+          return (
+            <Button
+              type="primary"
+              danger
+              onClick={() => cancelRequest(request.id)}
+            >
+              Cancel
+            </Button>
+          );
+        } else if (request.status === Status.APPROVED) {
+          return (
+            <Button
+              type="primary"
+              onClick={() => confirmWithdraw(request.id)}
+            ></Button>
+          );
+        }
+        return null;
+      },
     },
   ];
 
@@ -174,20 +329,66 @@ export const MyRequestsContent = () => {
         </TabPane>
         <TabPane tab="Approved" key="2">
           <Table
-            columns={columns}
-            // dataSource={approvedRequests}
+            columns={columns.map((col) =>
+              col.key === "action"
+                ? {
+                    ...col,
+                    render: (_: any, request: any) => {
+                      if (request.initiatedWithdrawal) {
+                        return (
+                          <Button type="primary" disabled>
+                            Pending Withdrawal
+                          </Button>
+                        );
+                      } else {
+                        return (
+                          <Button
+                            type="primary"
+                            onClick={() => confirmWithdraw(request.id)}
+                          >
+                            Withdraw
+                          </Button>
+                        );
+                      }
+                    },
+                  }
+                : col,
+            )}
+            dataSource={approvedRequests}
             pagination={false}
             rowKey={(request) => request.id}
           />
         </TabPane>
         <TabPane tab="Rejected" key="3">
           <Table
-            columns={columns}
-            // dataSource={rejectedRequests}
+            columns={columns.map((col) =>
+              col.key === "action" ? { ...col, render: () => null } : col,
+            )}
+            dataSource={rejectedRequests}
             pagination={false}
             rowKey={(request) => request.id}
           />
-        </TabPane>
+        </TabPane>{" "}
+        <TabPane tab="Withdrawn" key="4">
+          <Table
+            columns={columns.map((col) =>
+              col.key === "action" ? { ...col, render: () => null } : col,
+            )}
+            dataSource={withdrawnRequests}
+            pagination={false}
+            rowKey={(request) => request.id}
+          />
+        </TabPane>{" "}
+        <TabPane tab="Revoked" key="5">
+          <Table
+            columns={columns.map((col) =>
+              col.key === "action" ? { ...col, render: () => null } : col,
+            )}
+            dataSource={revokedRequests}
+            pagination={false}
+            rowKey={(request) => request.id}
+          />
+        </TabPane>{" "}
       </Tabs>
     </div>
   );
