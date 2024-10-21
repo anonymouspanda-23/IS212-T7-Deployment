@@ -1,5 +1,12 @@
 # backend Deployment File
 
+# Namespace for backend
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prod
+
 # ServiceAccount for cluster
 ---
 apiVersion: v1
@@ -8,12 +15,18 @@ metadata:
   name: spm-service-account
   namespace: prod
 
-# Namespace for backend
+# SecretProvider for cluster
 ---
-apiVersion: v1
-kind: Namespace
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
 metadata:
-  name: prod
+  name: conn-str
+spec:
+  provider: gke
+  parameters:
+    secrets: |
+      - resourceName: "projects/PROJECT_ID/secrets/CONNECTION_STRING/versions/1"
+        path: "CONNECTION_STRING.txt"
 
 # Deployment for backend Application
 ---
@@ -25,6 +38,7 @@ metadata:
   labels:
     app: backend-deployment
 spec:
+  serviceAccountName: spm-service-account
   replicas: 1
   selector:
     matchLabels:
@@ -46,6 +60,16 @@ spec:
             limits:
               memory: "100Mi"
               cpu: "100m"
+          volumeMounts:
+            - name: secret-storage
+              mountPath: /var/secrets
+      volumes:
+        - name: secret-storage
+          csi:
+            driver: secrets-store-gke.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: conn-str
       restartPolicy: Always
 
 # Service for backend Application
