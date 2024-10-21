@@ -63,9 +63,15 @@ const withdrawalController = new WithdrawalController(withdrawalService);
 const logController = new LogController(logService);
 
 const router = new Router();
+const healthcheck = new Router();
+
 router.prefix("/api/v1");
 router.get("/swagger.json", (ctx) => {
   ctx.body = swaggerSpec;
+});
+
+healthcheck.get("/healthcheck", (ctx) => {
+  ctx.response.status = 200;
 });
 
 router.get(
