@@ -8,6 +8,7 @@
     "dept": "Sales",
     "position": "Account Manager",
     "reason": "Plans cancelled",
-    "requestedDate": "2024-10-21"
+    "requestedDate": "2024-10-22",
+    "requestType": "AM"
   }
 ]

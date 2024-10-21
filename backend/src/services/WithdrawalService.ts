@@ -74,6 +74,7 @@ class WithdrawalService {
       dept,
       position,
       requestedDate,
+      requestType
     } = request!;
 
     if (
@@ -92,6 +93,7 @@ class WithdrawalService {
       dept,
       position,
       requestedDate,
+      requestType
     };
     const result = await this.withdrawalDb.withdrawRequest(document);
 

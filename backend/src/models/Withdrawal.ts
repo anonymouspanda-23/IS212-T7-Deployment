@@ -14,6 +14,7 @@ export interface IWithdrawal {
   reason: string | null;
   status: Status;
   requestedDate: Date;
+  requestType: string;
 }
 
 const Schema = mongoose.Schema;
@@ -49,6 +50,8 @@ const WithdrawalSchema = new Schema<IWithdrawal>(
       default: Status.PENDING,
     },
     requestedDate: { type: Date, required: true },
+    requestType: { type: String, required: true },
+
   },
   {
     timestamps: true,
