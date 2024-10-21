@@ -167,9 +167,16 @@ class RequestDb {
     }
   }
 
-  public async updateRequestStatusToExpired(): Promise<boolean> {
+  public async updateRequestStatusToExpired(): Promise<any> {
     const now = dayjs().utc(true).startOf("day");
-    const { modifiedCount } = await Request.updateMany(
+    const requests = await Request.find({
+      status: Status.PENDING,
+      requestedDate: now.toDate(),
+    });
+
+    if (!requests.length) return [];
+
+    await Request.updateMany(
       {
         status: Status.PENDING,
         requestedDate: now.toDate(),
@@ -181,7 +188,7 @@ class RequestDb {
       },
     );
 
-    return modifiedCount > 0;
+    return requests;
   }
 
   public async approveRequest(

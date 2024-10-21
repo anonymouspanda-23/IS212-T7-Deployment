@@ -60,7 +60,7 @@ class WithdrawalDb {
     }
     return withdrawalRequest;
   }
-  
+
   public async approveWithdrawalRequest(
     withdrawalId: number,
   ): Promise<string | null> {
@@ -103,9 +103,16 @@ class WithdrawalDb {
     return HttpStatusResponse.OK;
   }
 
-  public async updateWithdrawalStatusToExpired(): Promise<boolean> {
+  public async updateWithdrawalStatusToExpired(): Promise<any> {
     const now = dayjs().utc(true).startOf("day");
-    const { modifiedCount } = await Withdrawal.updateMany(
+    const withdrawalRequests = await Withdrawal.find({
+      status: Status.PENDING,
+      requestedDate: now.toDate(),
+    });
+
+    if (!withdrawalRequests.length) return [];
+
+    await Withdrawal.updateMany(
       {
         status: Status.PENDING,
         requestedDate: now.toDate(),
@@ -117,7 +124,7 @@ class WithdrawalDb {
       },
     );
 
-    return modifiedCount > 0;
+    return withdrawalRequests;
   }
 }
 

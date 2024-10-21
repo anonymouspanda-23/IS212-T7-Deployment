@@ -449,18 +449,22 @@ class RequestService {
   }
 
   public async updateRequestStatusToExpired() {
-    const isStatusUpdated = await this.requestDb.updateRequestStatusToExpired();
-    if (isStatusUpdated) {
-      /**
-       * Logging
-       */
-      await this.logService.logRequestHelper({
-        performedBy: PerformedBy.SYSTEM,
-        requestType: Request.REASSIGNMENT,
-        action: Action.EXPIRE,
-        dept: PerformedBy.SYSTEM as any,
-        position: PerformedBy.SYSTEM as any,
-      });
+    const requests = await this.requestDb.updateRequestStatusToExpired();
+    if (!!requests) {
+      for (const request of requests) {
+        const { requestId } = request;
+        /**
+         * Logging
+         */
+        await this.logService.logRequestHelper({
+          performedBy: PerformedBy.SYSTEM,
+          requestId: requestId,
+          requestType: Request.REASSIGNMENT,
+          action: Action.EXPIRE,
+          dept: PerformedBy.PERFORMED_BY_SYSTEM as any,
+          position: PerformedBy.PERFORMED_BY_SYSTEM as any,
+        });
+      }
     }
   }
 

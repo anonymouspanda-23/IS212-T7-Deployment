@@ -275,18 +275,20 @@ class WithdrawalService {
   }
 
   public async updateWithdrawalStatusToExpired() {
-    const isStatusUpdated =
+    const withdrawalRequests =
       await this.withdrawalDb.updateWithdrawalStatusToExpired();
-    if (isStatusUpdated) {
+    if (!!withdrawalRequests) {
+      const { requestId } = withdrawalRequests;
       /**
        * Logging
        */
       await this.logService.logRequestHelper({
         performedBy: PerformedBy.SYSTEM,
+        requestId: requestId,
         requestType: Request.WITHDRAWAL,
         action: Action.EXPIRE,
-        dept: PerformedBy.SYSTEM as any,
-        position: PerformedBy.SYSTEM as any,
+        dept: PerformedBy.PERFORMED_BY_SYSTEM as any,
+        position: PerformedBy.PERFORMED_BY_SYSTEM as any,
       });
     }
   }

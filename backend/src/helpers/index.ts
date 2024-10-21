@@ -110,6 +110,7 @@ enum Action {
 
 enum PerformedBy {
   SYSTEM,
+  PERFORMED_BY_SYSTEM = "Performed By System",
 }
 
 export {
