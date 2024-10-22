@@ -53,18 +53,20 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   return (
     <AntdLayout.Header style={headerStyles}>
       <Space>
+
         <div hidden={user?.role == 2}>
           <Badge count={pendingCount} offset={[-8, 0]}>
             <Button
               type="primary"
               icon={<AlertOutlined />}
               style={{ marginRight: 8 }}
-              onClick={() => navigate("/incomingRequests")} // Navigate to the route on click
-            >
+              onClick={() => navigate("/mainRequests")} // Navigate to the route on click
+              >
               Incoming WFH Requests
             </Button>
           </Badge>
         </div>
+
         <Space style={{ marginLeft: "8px" }} size="middle">
           {user?.name && <Text strong>{user.name}</Text>}
           {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}

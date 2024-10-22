@@ -21,7 +21,7 @@ import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 
 import { authProvider } from "./authProvider";
 import { IncomingList } from "./pages/approve-reject";
-// import { MainRequests } from "./pages/main-requests";
+import { MainRequests } from "./pages/main-requests";
 import Login from "./pages/login/login";
 import { Header } from "@/components";
 import {
@@ -185,6 +185,7 @@ const App = () => {
                   </Route>
                   <Route path="/wfhform" element={<WFHForm />} />
                   <Route path="/myRequests" element={<MyRequests />} />
+
                   <Route
                     path="/MyReassignments"
                     element={<MyReassignments />}
@@ -193,7 +194,7 @@ const App = () => {
                     path="/requestLogs"
                     element={<RequestLogs />}
                   />
-                  {/* <Route path="/myRequests" element={<MainRequests />} /> */}
+                  <Route path="/mainRequests" element={<MainRequests />} />
                   <Route path="/incomingRequests" element={<IncomingList />} />
                   <Route path="/blog-posts">
                     <Route index element={<BlogPostList />} />
