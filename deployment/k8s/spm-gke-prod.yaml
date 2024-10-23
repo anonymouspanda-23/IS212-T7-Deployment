@@ -26,7 +26,7 @@ spec:
   provider: gke
   parameters:
     secrets: |
-      - resourceName: "projects/PROJECT_ID/secrets/env/versions/1"
+      - resourceName: "projects/PROJECT_ID/secrets/env/versions/2"
         path: ".env"
 
 # Deployment for backend Application
