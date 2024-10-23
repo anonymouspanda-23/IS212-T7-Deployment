@@ -1,10 +1,13 @@
-# IS212 T7 SPM Project
+# IS212 G5T7 SPM Project
+
+<img src="https://github.com/user-attachments/assets/7328d6de-51fe-48b7-bd0b-6fdc01687a01" alt="g5t7" width="600" />
+<br><br>
 
 ## Tech Stack
 
 - [React.js](https://react.dev)
 - [Refine](https://refine.dev)
-- [Tailwind CSS](https://tailwindcss.com)
+- [Chakra UI](https://www.chakra-ui.com)
 - [Koa.js](https://koajs.com/)
 - [Mongoose](https://mongoosejs.com)
 - [MongoDB](https://www.mongodb.com)
@@ -53,16 +56,13 @@
    ```
 
 5. To run test
-
-   ```
-   cd frontend
-   npm run test
-   ```
-
    ```
    cd backend
    npm run test
    ```
+   
+## API Documentation
+`https://www.lurence.org/api/v1/docs`
 
 ## Acknowledgements
 
