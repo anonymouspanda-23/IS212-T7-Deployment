@@ -14,6 +14,8 @@ import {
   Typography,
   Descriptions,
   Modal,
+  Tag
+
 } from "antd";
 import axios from "axios";
 import { formatDate } from "@/utils/wfh-dateUtils";
@@ -174,7 +176,23 @@ export const ManageWithdrawals: React.FC = () => {
       key: "requestedDate",
       render: (dateString: string) => formatDate(new Date(dateString)),
     },
-    { title: "Request Type", dataIndex: "requestType", key: "requestType" },
+
+    { title: "Request Type", dataIndex: "requestType", key: "requestType",    render: (type: any) => {
+      let color = "";
+      switch (type) {
+        case "FULL":
+          color = "purple";
+          break;
+        case "PM":
+        case "AM":
+          color = "gold";
+          break;
+        default:
+          color = "gray";
+          break;
+      }
+      return <Tag color={color}>{type}</Tag>;
+    }, },
     {
       title: "Status",
       dataIndex: "status",
@@ -204,10 +222,29 @@ export const ManageWithdrawals: React.FC = () => {
 
   return (
     <List>
-      <Title level={3}>Manage Withdrawals</Title>
 
-      <Row gutter={16}>
-        <Col span={8}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={12}>
+          <Title level={3}>Manage Withdrawals</Title>
+        </Col>
+        <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+          <Select
+            placeholder="Filter by status"
+            style={{ width: '100%', maxWidth: 200, marginBottom: 16 }}
+            onChange={(value) => setFilterStatus(value)}
+            allowClear
+          >
+            <Select.Option value={undefined}>All</Select.Option>
+            <Select.Option value="PENDING">Pending</Select.Option>
+            <Select.Option value="APPROVED">Approved</Select.Option>
+            <Select.Option value="REJECTED">Rejected</Select.Option>
+          </Select>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={8}>
+
           <Card bordered={false}>
             <Statistic
               title="Pending Withdrawals"
@@ -216,7 +253,8 @@ export const ManageWithdrawals: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={8}>
+
           <Card bordered={false}>
             <Statistic
               title="Approved Withdrawals"
@@ -225,7 +263,8 @@ export const ManageWithdrawals: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col xs={24} sm={8}>
+
           <Card bordered={false}>
             <Statistic
               title="Rejected Withdrawals"
@@ -235,22 +274,17 @@ export const ManageWithdrawals: React.FC = () => {
           </Card>
         </Col>
       </Row>
+      <div style={{ overflowX: 'auto', marginTop: 16 }}>
+        <Table 
+          columns={columns} 
+          dataSource={filteredData} 
+          rowKey="id"
+          scroll={{ x: 'max-content' }}
+        />
+      </div>
 
-      <Select
-        placeholder="Filter by status"
-        style={{ width: 200, marginBottom: 16,  float: "right", marginTop: 50}}
-        onChange={(value) => setFilterStatus(value)}
-        allowClear
-      >
-        <Select.Option value={undefined}>All</Select.Option>
-        <Select.Option value="PENDING" >Pending</Select.Option>
-        <Select.Option value="APPROVED">Approved</Select.Option>
-        <Select.Option value="REJECTED">Rejected</Select.Option>
-      </Select>
 
-      <Table columns={columns} dataSource={filteredData} rowKey="id" />
-
-     
+      {/* Edit Modal */}
       <Modal
         title="Manage Withdrawal"
         open={editModalVisible}
@@ -259,15 +293,20 @@ export const ManageWithdrawals: React.FC = () => {
           form.resetFields();
         }}
         footer={null}
+        width="90%"
+        style={{ maxWidth: '600px' }}
       >
         {selectedWithdrawal && (
           <Form form={form} onFinish={handleEditSubmit}>
-            <Descriptions layout="vertical" bordered>
+            <Descriptions layout="vertical" bordered column={{ xs: 1, sm: 2, md: 3 }}>
               <Descriptions.Item label="Withdrawal Id">
                 {selectedWithdrawal.withdrawalId}
               </Descriptions.Item>
               <Descriptions.Item label="Staff Name">
                 {selectedWithdrawal.staffName}
+              </Descriptions.Item>
+              <Descriptions.Item label="Department">
+                {(selectedWithdrawal.dept)}
               </Descriptions.Item>
               <Descriptions.Item label="WFH Date">
                 {formatDate(new Date(selectedWithdrawal.requestedDate))}
@@ -307,8 +346,7 @@ export const ManageWithdrawals: React.FC = () => {
                 ) : null
               }
             </Form.Item>
-
-            <Form.Item>
+            <Form.Item style={{textAlign:'center'}}>
               <Button type="primary" htmlType="submit">
                 Save
               </Button>
@@ -331,11 +369,13 @@ export const ManageWithdrawals: React.FC = () => {
           >
             Yes
           </Button>
-            <Button key="cancel"  onClick={() => setConfirmModalVisible(false)}>
+            <Button key="cancel" onClick={() => setConfirmModalVisible(false)}>
             No
           </Button>
           </div>
         ]}
+        width="90%"
+        style={{ maxWidth: '400px' }}
       >
         <Typography.Text>
           Are you sure you want to{" "}
