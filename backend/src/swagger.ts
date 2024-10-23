@@ -9,7 +9,7 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: `${process.env.DOMAIN}/api/v1/docs`,
+      url: process.env.DOMAIN,
       description: "Development Server",
     },
   ],
