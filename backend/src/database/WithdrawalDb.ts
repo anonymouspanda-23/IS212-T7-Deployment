@@ -10,6 +10,8 @@ interface InsertDocument {
   managerName: string | null;
   dept: string;
   position: string;
+  requestedDate: Date;
+  requestType: string;
 }
 
 class WithdrawalDb {

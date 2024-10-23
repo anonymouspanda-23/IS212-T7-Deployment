@@ -34,9 +34,9 @@ const ReassignmentSchema = new Schema<IReassignment>(
     staffName: { type: String, required: true },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
-    originalManagerDept: { type: String, required: true },
-    tempReportingManagerId: { type: Number, required: true },
-    tempManagerName: { type: String, required: true },
+    originalManagerDept: { type: String, required: false },
+    tempReportingManagerId: { type: Number, required: false },
+    tempManagerName: { type: String, required: false },
     status: {
       type: String,
       required: true,

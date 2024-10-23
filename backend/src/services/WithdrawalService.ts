@@ -42,7 +42,7 @@ class WithdrawalService {
     const request = await this.withdrawalDb.getWithdrawalRequest(
       Number(requestId),
     );
-    if (request.length < 1) {
+    if (!request || request.length < 1) {
       return null;
     }
     return request;

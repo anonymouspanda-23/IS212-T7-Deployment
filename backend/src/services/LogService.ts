@@ -6,8 +6,8 @@ interface iLogRequest {
   performedBy: PerformedBy | string;
   requestType: Request;
   action: Action;
-  dept?: Dept;
-  position?: string;
+  dept: Dept;
+  position: string;
   requestId?: number;
   reason?: string;
   staffName?: string;

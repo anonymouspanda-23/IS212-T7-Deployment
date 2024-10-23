@@ -89,8 +89,6 @@ export const WFHForm: React.FC = () => {
         dept,
         reportingManager,
         reportingManagerName,
-        tempReportingManager,
-        tempReportingManagerName,
       } = staff;
 
       const newEmployeeData = {

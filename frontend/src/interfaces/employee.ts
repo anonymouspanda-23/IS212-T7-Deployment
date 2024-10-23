@@ -7,6 +7,4 @@ export interface EmployeeJWT {
     position: string;
     reportingManager: number;
     reportingManagerName: string;
-    tempReportingManager: string | null;
-    tempReportingManagerName: number | null;
 }

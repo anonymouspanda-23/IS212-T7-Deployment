@@ -371,7 +371,7 @@ class RequestService {
         return null;
       }
     }
-    const result = await this.requestDb.approveRequest(performedBy, requestId);
+    const result = await this.requestDb.approveRequest(requestId);
     if (!result) {
       return null;
     }
@@ -419,7 +419,6 @@ class RequestService {
       }
     }
     const result = await this.requestDb.rejectRequest(
-      performedBy,
       requestId,
       reason,
     );

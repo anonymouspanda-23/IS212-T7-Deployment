@@ -122,7 +122,6 @@ class RequestDb {
           reason: 1,
           status: 1,
           requestId: 1,
-          performedBy: 1,
         },
       },
       {
@@ -184,7 +183,6 @@ class RequestDb {
   }
 
   public async approveRequest(
-    performedBy: number,
     requestId: number,
   ): Promise<string | null> {
     const { modifiedCount } = await Request.updateMany(
@@ -195,7 +193,6 @@ class RequestDb {
       {
         $set: {
           status: Status.APPROVED,
-          performedBy: performedBy,
         },
       },
     );
@@ -217,7 +214,6 @@ class RequestDb {
   }
 
   public async rejectRequest(
-    performedBy: number,
     requestId: number,
     reason: string,
   ): Promise<string | null> {
@@ -230,7 +226,6 @@ class RequestDb {
         $set: {
           status: Status.REJECTED,
           reason: reason,
-          performedBy: performedBy,
         },
       },
     );

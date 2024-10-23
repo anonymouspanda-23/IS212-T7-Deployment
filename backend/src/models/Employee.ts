@@ -17,8 +17,6 @@ export interface IEmployee {
   hashedPassword: string;
   reportingManager: number;
   reportingManagerName: string;
-  tempReportingManager: number | null;
-  tempReportingManagerName: string | null;
   role: Role;
 }
 
@@ -32,19 +30,13 @@ const EmployeeSchema = new Schema<IEmployee>(
     position: { type: String, required: true },
     country: { type: String, required: true },
     email: { type: String, required: true },
-    hashedPassword: { type: String, required: true },
+    hashedPassword: { type: String, required: false },
     reportingManager: {
       type: Number,
       ref: "Employee",
       required: false,
     },
-    reportingManagerName: { type: String, required: true },
-    tempReportingManager: {
-      type: Number,
-      ref: "Employee",
-      required: false,
-    },
-    tempReportingManagerName: { type: String, required: false },
+    reportingManagerName: { type: String, required: false },
     role: { type: Number, required: true, enum: [1, 2, 3] },
   },
   {

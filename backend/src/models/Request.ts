@@ -15,7 +15,6 @@ export interface IRequest {
   reason: string;
   initiatedWithdrawal: boolean;
   status: Status;
-  performedBy: number | null;
 }
 
 const Schema = mongoose.Schema;
@@ -39,9 +38,9 @@ const RequestSchema = new Schema<IRequest>(
     dept: { type: String, required: true },
     requestedDate: { type: Date, required: true },
     requestType: { type: String, required: true },
-    position: { type: String, required: true },
+    position: { type: String, required: false },
     reason: { type: String, required: true },
-    initiatedWithdrawal: { type: Boolean, required: true },
+    initiatedWithdrawal: { type: Boolean, required: false },
     status: {
       type: String,
       required: true,
@@ -54,11 +53,6 @@ const RequestSchema = new Schema<IRequest>(
         Status.REVOKED,
       ],
       default: Status.PENDING,
-    },
-    performedBy: {
-      type: Number,
-      ref: "Employee",
-      required: false,
     },
   },
   {

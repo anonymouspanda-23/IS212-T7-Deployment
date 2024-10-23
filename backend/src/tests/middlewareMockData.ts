@@ -12,8 +12,6 @@ const middlewareMockData = {
     reportingManager: 130002,
     role: 1,
     reportingManagerName: "Jack Sim",
-    tempReportingManager: null,
-    tempReportingManagerName: null,
   },
   [`${Dept.SALES}_Same_Team`]: {
     staffId: 140004,
@@ -26,8 +24,6 @@ const middlewareMockData = {
     reportingManager: 140894,
     role: 2,
     reportingManagerName: "Rahim Khalid",
-    tempReportingManager: null,
-    tempReportingManagerName: null,
   },
   [`${Dept.SALES}_Different_Team`]: {
     staffId: 140880,
@@ -40,8 +36,6 @@ const middlewareMockData = {
     reportingManager: 140008,
     role: 2,
     reportingManagerName: "Jaclyn Lee",
-    tempReportingManager: null,
-    tempReportingManagerName: null,
   },
   [Dept.ENGINEERING]: {
     staffId: 150115,
@@ -54,8 +48,6 @@ const middlewareMockData = {
     reportingManager: 151408,
     role: 2,
     reportingManagerName: "Philip Lee",
-    tempReportingManager: null,
-    tempReportingManagerName: null,
   },
   [`${Dept.SALES}_Manager`]: {
     staffId: 140894,
@@ -68,8 +60,6 @@ const middlewareMockData = {
     reportingManager: 140001,
     role: 3,
     reportingManagerName: "Derek Tan",
-    tempReportingManager: null,
-    tempReportingManagerName: null,
   },
 };
 
