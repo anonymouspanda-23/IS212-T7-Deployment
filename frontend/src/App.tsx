@@ -16,36 +16,29 @@ import routerProvider, {
   NavigateToResource,
   UnsavedChangesNotifier,
 } from "@refinedev/react-router-v6";
-import { ConfigProvider, Layout } from "antd";
+import { ConfigProvider } from "antd";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router-dom";
 
-import { authProvider } from "./authProvider";
-import { IncomingList } from "./pages/approve-reject";
-import { MainRequests } from "./pages/main-requests";
-import Login from "./pages/login/login";
 import { Header } from "@/components";
-import {
-  BlogPostCreate,
-  BlogPostEdit,
-  BlogPostList,
-  BlogPostShow,
-} from "./pages/blog-posts";
+import DepartmentSchedule from "@/pages/department-schedule/department-schedule";
+import { Typography } from "antd";
+import { authProvider } from "./authProvider";
+import { useCustomNotificationProvider } from "./components/toast";
+import { IncomingList } from "./pages/approve-reject";
 import {
   CategoryCreate,
   CategoryEdit,
   CategoryList,
   CategoryShow,
 } from "./pages/categories";
-import { ScheduleList } from "./pages/schedule";
-import { WFHForm } from "./pages/wfh-application";
-import logo from "@/assets/logo.png";
-import { Typography } from "antd";
-import { MyRequests } from "./pages/my-requests/list";
+import Login from "./pages/login/login";
+import { MainRequests } from "./pages/main-requests";
 import { MyReassignments } from "./pages/my-reassignments/list";
+import { MyRequests } from "./pages/my-requests/list";
+import { RequestLogs } from "./pages/request-logs";
+import { ScheduleList } from "./pages/schedule";
 import { TeamScheduleList } from "./pages/team-schedule";
-import { RequestLogs } from "./pages/request-logs"
-import DepartmentSchedule from "@/pages/department-schedule/department-schedule";
-import { useCustomNotificationProvider } from "./components/toast";
+import { WFHForm } from "./pages/wfh-application";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 const App = () => {
@@ -147,7 +140,7 @@ const App = () => {
                     canDelete: false,
                     label: "Request Logs",
                   },
-                }
+                },
               ]}
               options={{
                 syncWithLocation: true,
@@ -190,18 +183,9 @@ const App = () => {
                     path="/MyReassignments"
                     element={<MyReassignments />}
                   />
-                  <Route
-                    path="/requestLogs"
-                    element={<RequestLogs />}
-                  />
+                  <Route path="/requestLogs" element={<RequestLogs />} />
                   <Route path="/mainRequests" element={<MainRequests />} />
                   <Route path="/incomingRequests" element={<IncomingList />} />
-                  <Route path="/blog-posts">
-                    <Route index element={<BlogPostList />} />
-                    <Route path="create" element={<BlogPostCreate />} />
-                    <Route path="edit/:id" element={<BlogPostEdit />} />
-                    <Route path="show/:id" element={<BlogPostShow />} />
-                  </Route>
 
                   <Route path="/categories">
                     <Route index element={<CategoryList />} />

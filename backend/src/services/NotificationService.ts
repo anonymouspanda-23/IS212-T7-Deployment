@@ -129,7 +129,6 @@ class NotificationService {
     requestDates: any,
     requestReason: string,
   ): Promise<string> {
-    console.log(requestType);
     try {
       const managerDetails = await this.getManagerDetails(managerId);
       const emailContent = this.createEmailContent(
@@ -141,7 +140,6 @@ class NotificationService {
       await this.sendEmail(emailSubject, staffEmail, emailContent);
       return "Email sent successfully!";
     } catch (error) {
-      console.log(error);
       return errMsg.FAILED_TO_SEND_EMAIL;
     }
   }

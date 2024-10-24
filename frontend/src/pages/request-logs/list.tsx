@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react";
 
-import { useGetIdentity } from "@refinedev/core";
 import { EmployeeJWT } from "@/interfaces/employee";
-import { ILogEntry, IDepartmentLogs, IPositionLogs } from "@/interfaces/requestLogs"
+import {
+  IDepartmentLogs,
+  ILogEntry,
+  IPositionLogs,
+} from "@/interfaces/requestLogs";
+import { useGetIdentity } from "@refinedev/core";
 import axios from "axios";
 
 import { Typography } from "antd";
 // Buttons Flex
 import { Button, Flex } from "antd";
 // Table
-import { Space, Table, Tag } from 'antd';
-import { Card, Row, Col, Divider } from 'antd';
-import { Checkbox, Input } from 'antd';
-import { Empty } from 'antd';
+import { Checkbox, Col, Divider, Empty, Input, Table } from "antd";
 
-import {LogsColumns} from '@/components/utils/logsColumnsConfig'
+import { LogsColumns } from "@/components/utils/logsColumnsConfig";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const { Title } = Typography;
@@ -25,8 +26,11 @@ export const RequestLogs = () => {
   const [hasLogs, setHasLogs] = useState(Boolean);
   const [allDeptData, setAllDeptData] = useState<IDepartmentLogs>({});
 
-  const [selectedDepartment, setSelectedDepartment] = useState<keyof IDepartmentLogs>();
-  const [selectedDeptTeams, setSelectedDeptTeams] = useState<(keyof IPositionLogs)[]>([]); // Teams under selected department
+  const [selectedDepartment, setSelectedDepartment] =
+    useState<keyof IDepartmentLogs>();
+  const [selectedDeptTeams, setSelectedDeptTeams] = useState<
+    (keyof IPositionLogs)[]
+  >([]); // Teams under selected department
 
   const [logsShow, setlogsShow] = useState<ILogEntry[]>([]);
   const [checkedList, setCheckedList] = useState<string[]>([]);
@@ -35,21 +39,23 @@ export const RequestLogs = () => {
 
   // Utils - Sorting
   const sortAndSetLogs = (logsList: ILogEntry[]) => {
-      const sortedLogsList = logsList.sort((a, b) => {
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
-      setlogsShow(sortedLogsList);
+    const sortedLogsList = logsList.sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    setlogsShow(sortedLogsList);
   };
 
-  const sortDepartmentsAlphabetically = (data: { [department: string]: IPositionLogs }): IDepartmentLogs => {
-      const sortedKeys = Object.keys(data).sort(); // Sort keys alphabetically
-      const sortedData: IDepartmentLogs = {}; // Ensure the return type matches IDepartmentLogs
-      // Construct a new object with sorted keys
-      sortedKeys.forEach(key => {
-          sortedData[key] = data[key]; // This should match the structure of IPositionLogs
-      });
+  const sortDepartmentsAlphabetically = (data: {
+    [department: string]: IPositionLogs;
+  }): IDepartmentLogs => {
+    const sortedKeys = Object.keys(data).sort(); // Sort keys alphabetically
+    const sortedData: IDepartmentLogs = {}; // Ensure the return type matches IDepartmentLogs
+    // Construct a new object with sorted keys
+    sortedKeys.forEach((key) => {
+      sortedData[key] = data[key]; // This should match the structure of IPositionLogs
+    });
 
-      return sortedData;
+    return sortedData;
   };
 
   useEffect(() => {
@@ -60,45 +66,48 @@ export const RequestLogs = () => {
 
   const fetchRequestLogs = async (user: EmployeeJWT) => {
     try {
-        const responseData = await axios.get(`${backendUrl}/api/v1/getAllLogs`, {
-            headers: {
-            id: user.staffId,
-            },
-            timeout: 300000,
-        });
-        if (responseData?.data && !('errMsg' in responseData.data)){
-          console.log(responseData)
-          const sortedDeptData = sortDepartmentsAlphabetically(responseData?.data)
-          setAllDeptData(sortedDeptData)
-          setHasLogs(true)
-        }
+      const responseData = await axios.get(`${backendUrl}/api/v1/getAllLogs`, {
+        headers: {
+          id: user.staffId,
+        },
+        timeout: 300000,
+      });
+      if (responseData?.data && !("errMsg" in responseData.data)) {
+        const sortedDeptData = sortDepartmentsAlphabetically(
+          responseData?.data,
+        );
+        setAllDeptData(sortedDeptData);
+        setHasLogs(true);
+      }
     } catch (error) {
       // console.error("Error fetching schedule data:", error);
     }
   };
 
-  useEffect(()=>{
-    const defaultDepartment = selectedDepartment || Object.keys(allDeptData)[0] as keyof IDepartmentLogs;
-    setSelectedDepartment(defaultDepartment)
+  useEffect(() => {
+    const defaultDepartment =
+      selectedDepartment ||
+      (Object.keys(allDeptData)[0] as keyof IDepartmentLogs);
+    setSelectedDepartment(defaultDepartment);
     const logsList: ILogEntry[] = [];
     const teamList: (keyof IPositionLogs)[] = [];
 
-    if (allDeptData[defaultDepartment]){
-      for (const key in allDeptData[defaultDepartment]){
-        logsList.push(...allDeptData[defaultDepartment][key])
-        teamList.push(key)
+    if (allDeptData[defaultDepartment]) {
+      for (const key in allDeptData[defaultDepartment]) {
+        logsList.push(...allDeptData[defaultDepartment][key]);
+        teamList.push(key);
       }
-      sortAndSetLogs(logsList)
-      setSelectedDeptTeams(teamList)
+      sortAndSetLogs(logsList);
+      setSelectedDeptTeams(teamList);
       const teamListAsStrings: string[] = teamList as string[];
       setCheckedList(teamListAsStrings);
     }
-
-  }, [allDeptData, selectedDepartment])
+  }, [allDeptData, selectedDepartment]);
 
   // Checkbox
   const CheckboxGroup = Checkbox.Group;
-  const onChange = (list: string[]) => { // Filter logs by selected team
+  const onChange = (list: string[]) => {
+    // Filter logs by selected team
     setCheckedList(list);
     if (selectedDepartment && allDeptData[selectedDepartment]) {
       const logsList: ILogEntry[] = [];
@@ -109,13 +118,12 @@ export const RequestLogs = () => {
       });
       sortAndSetLogs(logsList);
     }
-
   };
 
   // Empty Log Check
-  if (!hasLogs){
+  if (!hasLogs) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
+      <div style={{ padding: "20px", textAlign: "center" }}>
         <Empty
           description={<span>No logs found</span>}
           imageStyle={{
@@ -127,47 +135,53 @@ export const RequestLogs = () => {
   }
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchText(e.target.value);
+    setSearchText(e.target.value);
   };
   // Filter logs based on search input
-  const filteredLogs = logsShow.filter(log => 
-    log.staffName && log.staffName.toLowerCase().includes(searchText.toLowerCase())
-);
+  const filteredLogs = logsShow.filter(
+    (log) =>
+      log.staffName &&
+      log.staffName.toLowerCase().includes(searchText.toLowerCase()),
+  );
 
   return (
     <div>
       <Title level={3}>Department</Title>
       <Flex gap="small" wrap>
         {Object.keys(allDeptData).map((department) => (
-            <Button
-              key={department}
-              type={selectedDepartment === department ? 'primary' : 'default'}
-              onClick={() => setSelectedDepartment(department)}
-            >
-              {department}
-            </Button>
-          ))}
+          <Button
+            key={department}
+            type={selectedDepartment === department ? "primary" : "default"}
+            onClick={() => setSelectedDepartment(department)}
+          >
+            {department}
+          </Button>
+        ))}
       </Flex>
-      <Divider/>
+      <Divider />
       <Flex justify="space-between" align="flex-end">
-          <Col>
-              <Title level={4}>Teams</Title>
-              <CheckboxGroup options={selectedDeptTeams} value={checkedList} onChange={onChange} />
-          </Col>
-          <Col>
-              <Input
-                  placeholder="Search by Staff Name"
-                  value={searchText}
-                  onChange={handleSearch}
-                  style={{ marginBottom: 16 }}
-              />
-          </Col>
+        <Col>
+          <Title level={4}>Teams</Title>
+          <CheckboxGroup
+            options={selectedDeptTeams}
+            value={checkedList}
+            onChange={onChange}
+          />
+        </Col>
+        <Col>
+          <Input
+            placeholder="Search by Staff Name"
+            value={searchText}
+            onChange={handleSearch}
+            style={{ marginBottom: 16 }}
+          />
+        </Col>
       </Flex>
-      <Divider/>
-      <Table 
-        columns={LogsColumns} 
-        dataSource={filteredLogs} 
-        pagination={false} 
+      <Divider />
+      <Table
+        columns={LogsColumns}
+        dataSource={filteredLogs}
+        pagination={false}
       />
     </div>
   );
