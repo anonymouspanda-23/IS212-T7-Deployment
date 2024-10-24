@@ -1,19 +1,19 @@
+import Mailer from "@/config/mailer";
 import EmployeeDb from "@/database/EmployeeDb";
 import LogDb from "@/database/LogDb";
 import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
 import WithdrawalDb from "@/database/WithdrawalDb";
 import { Action, HttpStatusResponse, PerformedBy, Status } from "@/helpers";
+import NotificationService from "@/services/NotificationService";
 import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
 import WithdrawalService from "@/services/WithdrawalService";
 import { mockRequestData, mockWithdrawalData } from "@/tests/mockData";
 import { jest } from "@jest/globals";
+import nodemailer from "nodemailer";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
-import NotificationService from "@/services/NotificationService";
-import nodemailer from "nodemailer";
-import Mailer from "@/config/mailer";
 
 describe("getWithdrawalRequest", () => {
   let requestService: RequestService;
@@ -38,7 +38,7 @@ describe("getWithdrawalRequest", () => {
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
@@ -47,7 +47,7 @@ describe("getWithdrawalRequest", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
@@ -61,6 +61,7 @@ describe("getWithdrawalRequest", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,
@@ -121,7 +122,7 @@ describe("withdrawRequest", () => {
       employeeDbMock,
     ) as jest.Mocked<EmployeeService>;
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
@@ -130,7 +131,7 @@ describe("withdrawRequest", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
@@ -144,6 +145,7 @@ describe("withdrawRequest", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,

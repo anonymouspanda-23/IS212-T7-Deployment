@@ -70,11 +70,12 @@ describe("RequestController", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     requestServiceMock = new RequestService(
@@ -640,7 +641,9 @@ describe("getAllSubordinatesRequests", () => {
   });
 
   it("should handle cases where no requests are found", async () => {
-    mockRequestService.getAllSubordinatesRequests.mockResolvedValue([] as never);
+    mockRequestService.getAllSubordinatesRequests.mockResolvedValue(
+      [] as never,
+    );
 
     await requestController.getAllSubordinatesRequests(ctx);
 
@@ -791,7 +794,9 @@ describe("getMySchedule", () => {
 
   it("should handle errors from the service gracefully", async () => {
     const errorMessage = "Service error";
-    mockRequestService.getMySchedule.mockRejectedValue(new Error(errorMessage) as never);
+    mockRequestService.getMySchedule.mockRejectedValue(
+      new Error(errorMessage) as never,
+    );
 
     await expect(requestController.getMySchedule(ctx)).rejects.toThrow(
       errorMessage,
@@ -905,7 +910,9 @@ describe("approveRequest", () => {
       success: true,
     }) as any;
 
-    mockRequestService.approveRequest.mockResolvedValue(HttpStatusResponse.OK as never);
+    mockRequestService.approveRequest.mockResolvedValue(
+      HttpStatusResponse.OK as never,
+    );
 
     await requestController.approveRequest(ctx);
 
@@ -982,7 +989,9 @@ describe("rejectRequest", () => {
       success: true,
     }) as any;
 
-    mockRequestService.rejectRequest.mockResolvedValue(HttpStatusResponse.OK as never);
+    mockRequestService.rejectRequest.mockResolvedValue(
+      HttpStatusResponse.OK as never,
+    );
 
     await requestController.rejectRequest(ctx);
 
@@ -1068,7 +1077,9 @@ describe("revokeRequest", () => {
       success: true,
     }) as any;
 
-    mockRequestService.revokeRequest.mockResolvedValue(HttpStatusResponse.OK as never);
+    mockRequestService.revokeRequest.mockResolvedValue(
+      HttpStatusResponse.OK as never,
+    );
 
     await requestController.revokeRequest(ctx);
 

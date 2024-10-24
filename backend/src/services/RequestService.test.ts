@@ -4,11 +4,12 @@ import LogDb from "@/database/LogDb";
 import RequestDb from "@/database/RequestDb";
 import {
   AccessControl,
-  Action, EmailHeaders,
+  Action,
+  EmailHeaders,
   errMsg,
   HttpStatusResponse,
   PerformedBy,
-  Role
+  Role,
 } from "@/helpers";
 import { initializeCounter } from "@/helpers/counter";
 import * as dateUtils from "@/helpers/date";
@@ -66,7 +67,7 @@ describe("postRequest", () => {
 
   beforeEach(async () => {
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
@@ -84,7 +85,7 @@ describe("postRequest", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
@@ -98,6 +99,7 @@ describe("postRequest", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
 
     requestService = new RequestService(
@@ -145,10 +147,14 @@ describe("postRequest", () => {
       mockRequestData.PENDING,
     ] as any);
 
-    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as IEmployee);
+    employeeServiceMock.getEmployee.mockResolvedValue(
+      mockEmployee as IEmployee,
+    );
     const result = await requestService.postRequest(requestDetails);
     expect(result).toEqual(expectedResponse);
-    expect(notificationServiceMock.pushRequestSentNotification).toHaveBeenCalledTimes(0);
+    expect(
+      notificationServiceMock.pushRequestSentNotification,
+    ).toHaveBeenCalledTimes(0);
   });
 
   it("should return pastDates array for past date inputted", async () => {
@@ -177,10 +183,14 @@ describe("postRequest", () => {
       mockRequestData.PENDING,
     ] as any);
 
-    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as IEmployee);
+    employeeServiceMock.getEmployee.mockResolvedValue(
+      mockEmployee as IEmployee,
+    );
     const result = await requestService.postRequest(requestDetails);
     expect(result).toEqual(expectedResponse);
-    expect(notificationServiceMock.pushRequestSentNotification).toHaveBeenCalledTimes(0);
+    expect(
+      notificationServiceMock.pushRequestSentNotification,
+    ).toHaveBeenCalledTimes(0);
   });
 
   it("should return successDates for successful date inputted", async () => {
@@ -211,18 +221,25 @@ describe("postRequest", () => {
     ] as any);
 
     requestDbMock.postRequest.mockResolvedValue(true);
-    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as IEmployee);
+    employeeServiceMock.getEmployee.mockResolvedValue(
+      mockEmployee as IEmployee,
+    );
     const { email, reportingManager } = mockEmployee!;
 
     const result = await requestService.postRequest(requestDetails);
     expect(result).toEqual(expectedResponse);
-    expect(notificationServiceMock.pushRequestSentNotification).toHaveBeenCalledTimes(1);
-    expect(notificationServiceMock.pushRequestSentNotification).toHaveBeenCalledWith(
+    expect(
+      notificationServiceMock.pushRequestSentNotification,
+    ).toHaveBeenCalledTimes(1);
+    expect(
+      notificationServiceMock.pushRequestSentNotification,
+    ).toHaveBeenCalledWith(
       emailSubject,
       email,
       reportingManager,
+      "APPLICATION",
       expectedResponse.successDates,
-      requestDetails.reason
+      requestDetails.reason,
     );
   });
 
@@ -258,7 +275,9 @@ describe("postRequest", () => {
     employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as any);
     const result = await requestService.postRequest(requestDetails);
     expect(result).toEqual(expectedResponse);
-    expect(notificationServiceMock.pushRequestSentNotification).toHaveBeenCalledTimes(1);
+    expect(
+      notificationServiceMock.pushRequestSentNotification,
+    ).toHaveBeenCalledTimes(1);
   });
 
   it("should return noteDates array and successDates for successful dates inputted with >2 existing requests for that week", async () => {
@@ -296,7 +315,9 @@ describe("postRequest", () => {
     employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as any);
     const result = await requestService.postRequest(requestDetails);
     expect(result).toEqual(expectedResponse);
-    expect(notificationServiceMock.pushRequestSentNotification).toHaveBeenCalledTimes(1);
+    expect(
+      notificationServiceMock.pushRequestSentNotification,
+    ).toHaveBeenCalledTimes(1);
   });
 
   it("should return insertError array when successful dates inputted but with DB Error", async () => {
@@ -328,8 +349,10 @@ describe("postRequest", () => {
     employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as any);
     const result = await requestService.postRequest(requestDetails);
     expect(result).toEqual(expectedResponse);
-    expect(notificationServiceMock.pushRequestSentNotification).toHaveBeenCalledTimes(0);
-});
+    expect(
+      notificationServiceMock.pushRequestSentNotification,
+    ).toHaveBeenCalledTimes(0);
+  });
 
   it("should return pastDeadlineDates array when dates inputted has past deadline", async () => {
     const requestDetails = {
@@ -357,11 +380,15 @@ describe("postRequest", () => {
       mockRequestData.testing,
     ] as any);
 
-    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as IEmployee);
+    employeeServiceMock.getEmployee.mockResolvedValue(
+      mockEmployee as IEmployee,
+    );
     jest.spyOn(dateUtils, "checkLatestDate").mockReturnValue(true);
     const result = await requestService.postRequest(requestDetails);
     expect(result).toEqual(expectedResponse);
-    expect(notificationServiceMock.pushRequestSentNotification).toHaveBeenCalledTimes(0);
+    expect(
+      notificationServiceMock.pushRequestSentNotification,
+    ).toHaveBeenCalledTimes(0);
   });
 
   it("should return errorDates array when there is already a pending / approved request for that date", async () => {
@@ -390,10 +417,14 @@ describe("postRequest", () => {
       mockRequestData.testing,
     ] as any);
 
-    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as IEmployee);
+    employeeServiceMock.getEmployee.mockResolvedValue(
+      mockEmployee as IEmployee,
+    );
     const result = await requestService.postRequest(requestDetails);
     expect(result).toEqual(expectedResponse);
-    expect(notificationServiceMock.pushRequestSentNotification).toHaveBeenCalledTimes(0);
+    expect(
+      notificationServiceMock.pushRequestSentNotification,
+    ).toHaveBeenCalledTimes(0);
   });
 });
 
@@ -416,7 +447,7 @@ describe("getPendingOrApprovedRequests", () => {
     reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
 
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
@@ -429,7 +460,7 @@ describe("getPendingOrApprovedRequests", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
@@ -443,6 +474,7 @@ describe("getPendingOrApprovedRequests", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,
@@ -490,7 +522,7 @@ describe("cancel pending requests", () => {
     reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
 
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
@@ -503,7 +535,7 @@ describe("cancel pending requests", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
@@ -517,6 +549,7 @@ describe("cancel pending requests", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,
@@ -591,7 +624,7 @@ describe("get pending requests", () => {
     reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
 
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
@@ -604,7 +637,7 @@ describe("get pending requests", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     logDbMock = new LogDb() as jest.Mocked<LogDb>;
@@ -618,6 +651,7 @@ describe("get pending requests", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
     requestService = new RequestService(
       logServiceMock,
@@ -713,7 +747,7 @@ describe("get my schedule", () => {
     };
 
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
 
     mockMailer = {
@@ -723,7 +757,7 @@ describe("get my schedule", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     requestService = new RequestService(
@@ -782,7 +816,7 @@ describe("update request initiatedWithdrawal vlue", () => {
     };
 
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
 
     mockMailer = {
@@ -792,7 +826,7 @@ describe("update request initiatedWithdrawal vlue", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     requestService = new RequestService(
@@ -868,7 +902,7 @@ describe("get schedule", () => {
     };
 
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
 
     mockMailer = {
@@ -878,7 +912,7 @@ describe("get schedule", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     requestService = new RequestService(
@@ -1098,7 +1132,7 @@ describe("get approved request by requestId", () => {
     };
 
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
 
     mockMailer = {
@@ -1108,7 +1142,7 @@ describe("get approved request by requestId", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     requestService = new RequestService(
@@ -1185,7 +1219,7 @@ describe("get own pending requests", () => {
     reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
 
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
@@ -1204,7 +1238,7 @@ describe("get own pending requests", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     requestService = new RequestService(
@@ -1220,6 +1254,7 @@ describe("get own pending requests", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
 
     /**
@@ -1267,7 +1302,7 @@ describe("reject pending requests", () => {
     reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
 
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
@@ -1289,11 +1324,12 @@ describe("reject pending requests", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     requestService = new RequestService(
@@ -1410,7 +1446,7 @@ describe("approve pending requests", () => {
     reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
 
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
@@ -1432,11 +1468,12 @@ describe("approve pending requests", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     requestService = new RequestService(
@@ -1541,7 +1578,7 @@ describe("getPendingRequestByRequestId", () => {
     reassignmentDbMock = new ReassignmentDb() as jest.Mocked<ReassignmentDb>;
 
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
@@ -1563,11 +1600,12 @@ describe("getPendingRequestByRequestId", () => {
       requestDbMock,
       employeeServiceMock,
       logServiceMock,
+      notificationServiceMock,
     ) as jest.Mocked<ReassignmentService>;
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     requestService = new RequestService(
@@ -1625,7 +1663,7 @@ describe("setWithdrawnStatus", () => {
     };
 
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
 
     mockMailer = {
@@ -1635,7 +1673,7 @@ describe("setWithdrawnStatus", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     requestService = new RequestService(
@@ -1697,7 +1735,7 @@ describe("updateRequestStatusToExpired", () => {
       logRequestHelper: jest.fn(),
     };
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
@@ -1706,7 +1744,7 @@ describe("updateRequestStatusToExpired", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     requestService = new RequestService(
@@ -1784,7 +1822,7 @@ describe("revokeRequest", () => {
       logRequestHelper: jest.fn(),
     };
     mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never)
+      sendMail: jest.fn().mockResolvedValue(null as never),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
@@ -1793,7 +1831,7 @@ describe("revokeRequest", () => {
 
     notificationServiceMock = new NotificationService(
       employeeServiceMock,
-      mockMailer
+      mockMailer,
     ) as jest.Mocked<NotificationService>;
 
     requestService = new RequestService(

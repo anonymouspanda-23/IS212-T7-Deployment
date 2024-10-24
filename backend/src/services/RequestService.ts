@@ -1,11 +1,12 @@
 import RequestDb from "@/database/RequestDb";
 import {
   Action,
-  Dept, EmailHeaders,
+  Dept,
+  EmailHeaders,
   errMsg,
   HttpStatusResponse,
   PerformedBy,
-  Request
+  Request,
 } from "@/helpers";
 import { Role } from "@/helpers/";
 import {
@@ -348,9 +349,10 @@ class RequestService {
       EmailHeaders.REQUEST_SENT,
       email,
       reportingManager,
+      Request.APPLICATION,
       responseDates.successDates,
-      requestDetails.reason
-    )
+      requestDetails.reason,
+    );
 
     return responseDates;
   }
@@ -439,10 +441,7 @@ class RequestService {
         return null;
       }
     }
-    const result = await this.requestDb.rejectRequest(
-      requestId,
-      reason,
-    );
+    const result = await this.requestDb.rejectRequest(requestId, reason);
     if (!result) {
       return null;
     }

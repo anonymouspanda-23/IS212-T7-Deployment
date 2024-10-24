@@ -46,6 +46,7 @@ const reassignmentService = new ReassignmentService(
   requestDb,
   employeeService,
   logService,
+  notificationService,
 );
 const requestService = new RequestService(
   logService,

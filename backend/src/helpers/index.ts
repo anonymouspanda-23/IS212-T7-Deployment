@@ -31,7 +31,7 @@ enum errMsg {
   NO_ACTIVE_REASSIGNMENT = "No active reassignment found for the staff member as temp manager",
   GENERIC_ERROR = "An error has occurred.",
   LOGS_NOT_FOUND = "No logs found",
-  FAILED_TO_SEND_EMAIL = "Failed to send email"
+  FAILED_TO_SEND_EMAIL = "Failed to send email",
 }
 
 const noteMsg =
@@ -115,7 +115,8 @@ enum PerformedBy {
 }
 
 enum EmailHeaders {
-  REQUEST_SENT = "WFH Request Sent"
+  REQUEST_SENT = "[Application] WFH Request Sent",
+  REASSIGNMENT_SENT = "[Reassignment] Reassignment Request Sent",
 }
 
 export {
@@ -132,5 +133,5 @@ export {
   errMsg,
   noteMsg,
   successMsg,
-  EmailHeaders
+  EmailHeaders,
 };

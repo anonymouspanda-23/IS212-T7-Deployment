@@ -1,31 +1,26 @@
-import { useEffect, useState, useContext } from "react";
 import { EmployeeJWT } from "@/interfaces/employee";
 import { useGetIdentity } from "@refinedev/core";
 import {
   Button,
-  Typography,
-  Divider,
-  List,
-  Skeleton,
-  Select,
-  Statistic,
   Card,
-  Modal,
   DatePicker,
+  Divider,
   Input,
+  List,
   message,
+  Modal,
+  Select,
+  Skeleton,
+  Statistic,
+  Typography,
 } from "antd";
 import axios from "axios";
+import type { Dayjs } from "dayjs";
+import dayjs from "dayjs";
+import moment from "moment";
+import { useContext, useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { ColorModeContext } from "../../contexts/color-mode";
-import moment from "moment";
-import dayjs from "dayjs";
-import type { Dayjs } from "dayjs";
-
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
-const { Title } = Typography;
-const { Option } = Select;
-const { RangePicker } = DatePicker;
 
 interface DataType {
   dept: string;
@@ -36,19 +31,11 @@ interface DataType {
   staffName: string;
 }
 
-const fetchRequests = async () => {
-  try {
-    const response = await axios.get(
-      `${backendUrl}/api/v1/getRoleOneOrThreeEmployees`,
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching requests:", error);
-    return [];
-  }
-};
-
 export const MyReassignments = () => {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const { Title } = Typography;
+  const { Option } = Select;
+  const { RangePicker } = DatePicker;
   const { data: user } = useGetIdentity<EmployeeJWT>();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DataType[]>([]);
@@ -70,21 +57,30 @@ export const MyReassignments = () => {
       return;
     }
     setLoading(true);
-
-    fetchRequests()
-      .then((res) => {
-        setData(res);
-        setFilteredData(res);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
   };
 
   useEffect(() => {
-    loadMoreData();
-  }, []);
+    if (user?.staffId) {
+      fetchRequests(user.staffId);
+    }
+  }, [user?.staffId]);
+
+  const fetchRequests = async (staffId: any) => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(
+        `${backendUrl}/api/v1/getRoleOneOrThreeEmployees`,
+        { headers: { id: staffId } },
+      );
+      setLoading(false);
+      setData(data);
+      setFilteredData(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+      return [];
+    }
+  };
 
   const handleDeptChange = (value: string) => {
     setSelectedDept(value);

@@ -105,19 +105,19 @@ describe("getRoleOneOrThreeEmployees", () => {
 
     employeeDbMock.getRoleOneOrThreeEmployees.mockResolvedValue(mockEmployees);
 
-    const result = await employeeService.getRoleOneOrThreeEmployees();
+    const result = await employeeService.getRoleOneOrThreeEmployees(1);
     expect(result).toEqual(mockEmployees);
   });
 
   it("should return an empty array if no employees are found", async () => {
     employeeDbMock.getRoleOneOrThreeEmployees.mockResolvedValue([]);
 
-    const result = await employeeService.getRoleOneOrThreeEmployees();
+    const result = await employeeService.getRoleOneOrThreeEmployees(1);
     expect(result).toEqual([]);
   });
 
   it("should call getRoleOneOrThreeEmployees from employeeDb", async () => {
-    await employeeService.getRoleOneOrThreeEmployees();
+    await employeeService.getRoleOneOrThreeEmployees(1);
     expect(employeeDbMock.getRoleOneOrThreeEmployees).toHaveBeenCalled();
   });
 });

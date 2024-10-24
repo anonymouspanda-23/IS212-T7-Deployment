@@ -16,14 +16,17 @@ describe("NotificationService", () => {
     } as any;
 
     mockTransporter = {
-      sendMail: jest.fn().mockImplementation(() => Promise.resolve())
+      sendMail: jest.fn().mockImplementation(() => Promise.resolve()),
     } as unknown as jest.Mocked<nodemailer.Transporter>;
     mockMailer = {
       getInstance: jest.fn().mockReturnThis(),
       getTransporter: jest.fn().mockReturnValue(mockTransporter),
     } as unknown as jest.Mocked<Mailer>;
 
-    notificationService = new NotificationService(employeeServiceMock, mockMailer);
+    notificationService = new NotificationService(
+      employeeServiceMock,
+      mockMailer,
+    );
   });
 
   afterEach(() => {
@@ -36,6 +39,7 @@ describe("NotificationService", () => {
     const mockManagerId = 1;
     const mockRequestDates: [string, string][] = [["2023-06-01", "Full Day"]];
     const mockRequestReason = "Working on project";
+    const mockRequestType = "REASSIGNMENT";
 
     it("should send an email successfully", async () => {
       employeeServiceMock.getEmployee.mockResolvedValue({
@@ -48,12 +52,15 @@ describe("NotificationService", () => {
         emailSubject,
         mockStaffEmail,
         mockManagerId,
+        mockRequestType,
         mockRequestDates,
-        mockRequestReason
+        mockRequestReason,
       );
 
       expect(result).toBe("Email sent successfully!");
-      expect(employeeServiceMock.getEmployee).toHaveBeenCalledWith(mockManagerId);
+      expect(employeeServiceMock.getEmployee).toHaveBeenCalledWith(
+        mockManagerId,
+      );
       expect(mockMailer.getTransporter().sendMail).toHaveBeenCalled();
     });
 
@@ -64,12 +71,15 @@ describe("NotificationService", () => {
         emailSubject,
         mockStaffEmail,
         mockManagerId,
+        mockRequestType,
         mockRequestDates,
-        mockRequestReason
+        mockRequestReason,
       );
 
       expect(result).toBe("Failed to send email");
-      expect(employeeServiceMock.getEmployee).toHaveBeenCalledWith(mockManagerId);
+      expect(employeeServiceMock.getEmployee).toHaveBeenCalledWith(
+        mockManagerId,
+      );
       expect(mockMailer.getTransporter().sendMail).not.toHaveBeenCalled();
     });
 
@@ -80,14 +90,17 @@ describe("NotificationService", () => {
         email: "john.doe@example.com",
       } as any);
 
-      (mockTransporter.sendMail as jest.Mock).mockRejectedValue(new Error("Send failed") as never);
+      (mockTransporter.sendMail as jest.Mock).mockRejectedValue(
+        new Error("Send failed") as never,
+      );
 
       const result = await notificationService.pushRequestSentNotification(
         emailSubject,
         mockStaffEmail,
         mockManagerId,
+        mockRequestType,
         mockRequestDates,
-        mockRequestReason
+        mockRequestReason,
       );
 
       expect(result).toBe("Failed to send email");
@@ -104,8 +117,9 @@ describe("NotificationService", () => {
         emailSubject,
         mockStaffEmail,
         mockManagerId,
+        mockRequestType,
         [],
-        mockRequestReason
+        mockRequestReason,
       );
 
       expect(result).toBe("Failed to send email");

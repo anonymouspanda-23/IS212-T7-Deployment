@@ -232,6 +232,11 @@ describe("getRoleOneOrThreeEmployees", () => {
     employeeController = new EmployeeController(employeeService);
 
     ctx = {
+      request: {
+        header: {
+          id: 1,
+        },
+      },
       body: null,
     } as unknown as Context;
   });

@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
-import weekOfYear from "dayjs/plugin/weekOfYear";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 import localeData from "dayjs/plugin/localeData";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+import weekOfYear from "dayjs/plugin/weekOfYear";
 
 dayjs.extend(weekOfYear);
 dayjs.extend(utc);
@@ -100,9 +100,7 @@ function checkPastWithdrawalDate(date: Date) {
   const tomorrowInSingapore = singaporeTime.add(1, "day");
   let dateInput = dayjs(date).tz("Asia/Singapore");
   dateInput = dateInput.hour(0).minute(0).second(0).millisecond(0);
-  if (
-    dateInput.isBefore(tomorrowInSingapore)
-  ) {
+  if (dateInput.isBefore(tomorrowInSingapore)) {
     return true;
   }
   return false;
@@ -143,12 +141,25 @@ function checkLatestDate(date: Date, testDate: Date | null = null) {
   return false;
 }
 
+function getDatesInRange(start: Date, end: Date) {
+  const dates = [];
+  let currentDate = dayjs(start);
+
+  while (currentDate.isBefore(end) || currentDate.isSame(end)) {
+    dates.push(currentDate.format("YYYY-MM-DD"));
+    currentDate = currentDate.add(1, "day");
+  }
+
+  return dates;
+}
+
 export {
-  weekMap,
   checkDate,
-  checkPastDate,
   checkLatestDate,
-  checkWeekend,
+  checkPastDate,
   checkPastWithdrawalDate,
   checkValidWithdrawalDate,
+  checkWeekend,
+  getDatesInRange,
+  weekMap,
 };
