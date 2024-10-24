@@ -47,6 +47,16 @@
   MIGRATE_TEMPLATE_PATH=./migrations/template.ts
   MIGRATE_AUTOSYNC=false
   MIGRATE_MODE=development
+  SMTP_HOST=<REFER TO CONFLUENCE>
+  SMTP_AUTH_USER=<REFER TO CONFLUENCE>
+  SMTP_AUTH_PASSWORD=<REFER TO CONFLUENCE>
+  ```
+
+- Create the file `.env` at `frontend/.env`
+- Enter the following code
+
+  ```
+  VITE_BACKEND_URL=//localhost:3001
   ```
 
 4. Run the project in development environment
@@ -60,9 +70,12 @@
    cd backend
    npm run test
    ```
-   
+
 ## API Documentation
-`https://www.lurence.org/api/v1/docs`
+
+```
+https://www.lurence.org/api/v1/docs
+```
 
 ## Acknowledgements
 
