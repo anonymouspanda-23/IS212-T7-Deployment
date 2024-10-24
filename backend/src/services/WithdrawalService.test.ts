@@ -1,16 +1,16 @@
 import EmployeeDb from "@/database/EmployeeDb";
 import LogDb from "@/database/LogDb";
+import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
+import WithdrawalDb from "@/database/WithdrawalDb";
+import { Action, HttpStatusResponse, PerformedBy, Status } from "@/helpers";
+import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
-import { mockWithdrawalData, mockRequestData } from "@/tests/mockData";
+import WithdrawalService from "@/services/WithdrawalService";
+import { mockRequestData, mockWithdrawalData } from "@/tests/mockData";
 import { jest } from "@jest/globals";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
-import ReassignmentDb from "@/database/ReassignmentDb";
-import ReassignmentService from "@/services/ReassignmentService";
-import WithdrawalService from "@/services/WithdrawalService";
-import WithdrawalDb from "@/database/WithdrawalDb";
-import { HttpStatusResponse } from "@/helpers";
 
 describe("getWithdrawalRequest", () => {
   let requestService: RequestService;
@@ -149,5 +149,322 @@ describe("withdrawRequest", () => {
     requestDbMock.getApprovedRequestByRequestId.mockResolvedValue([] as any);
     const result = await withdrawalService.getWithdrawalRequest(1044);
     expect(result).toEqual(null);
+  });
+});
+
+describe("getOwnWithdrawalRequests", () => {
+  let withdrawalService: WithdrawalService;
+  let requestService: RequestService;
+  let employeeServiceMock: jest.Mocked<EmployeeService>;
+  let logServiceMock: any;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
+  let withdrawalDbMock: any;
+
+  beforeEach(() => {
+    withdrawalDbMock = {
+      getOwnWithdrawalRequests: jest.fn(),
+    };
+    logServiceMock = {
+      logRequestHelper: jest.fn(),
+    };
+
+    withdrawalService = new WithdrawalService(
+      logServiceMock,
+      withdrawalDbMock,
+      requestService,
+      reassignmentServiceMock,
+      employeeServiceMock,
+    );
+  });
+
+  it("should retrieve withdrawal requests and log the request when there are own requests", async () => {
+    const staffId = 1;
+    const ownRequests = [
+      {
+        staffName: "John Doe",
+        dept: "Finance",
+        position: "Accountant",
+        reportingManager: 2,
+        managerName: "Jane Smith",
+      },
+    ];
+
+    withdrawalDbMock.getOwnWithdrawalRequests.mockResolvedValueOnce(
+      ownRequests,
+    );
+
+    const result = await withdrawalService.getOwnWithdrawalRequests(staffId);
+
+    expect(result).toEqual(ownRequests);
+    expect(withdrawalDbMock.getOwnWithdrawalRequests).toHaveBeenCalledWith(
+      staffId,
+    );
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
+      performedBy: staffId,
+      requestType: "WITHDRAWAL",
+      action: Action.RETRIEVE,
+      staffName: ownRequests[0].staffName,
+      dept: ownRequests[0].dept,
+      position: ownRequests[0].position,
+      reportingManagerId: ownRequests[0].reportingManager,
+      managerName: ownRequests[0].managerName,
+    });
+  });
+
+  it("should return an empty array and not log when there are no own requests", async () => {
+    const staffId = 1;
+
+    withdrawalDbMock.getOwnWithdrawalRequests.mockResolvedValueOnce([]);
+
+    const result = await withdrawalService.getOwnWithdrawalRequests(staffId);
+
+    expect(result).toEqual([]);
+    expect(withdrawalDbMock.getOwnWithdrawalRequests).toHaveBeenCalledWith(
+      staffId,
+    );
+    expect(logServiceMock.logRequestHelper).not.toHaveBeenCalled();
+  });
+});
+
+describe("getWithdrawalRequestById", () => {
+  let withdrawalService: WithdrawalService;
+  let requestService: RequestService;
+  let employeeServiceMock: jest.Mocked<EmployeeService>;
+  let logServiceMock: any;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
+  let withdrawalDbMock: any;
+  beforeEach(() => {
+    withdrawalDbMock = {
+      getWithdrawalRequestById: jest.fn(),
+    };
+
+    withdrawalService = new WithdrawalService(
+      logServiceMock,
+      withdrawalDbMock,
+      requestService,
+      reassignmentServiceMock,
+      employeeServiceMock,
+    );
+  });
+
+  it("should return the withdrawal request when found", async () => {
+    const withdrawalId = 1;
+    const mockRequest = {
+      id: withdrawalId,
+      staffName: "John Doe",
+      dept: "Finance",
+      position: "Accountant",
+    };
+
+    withdrawalDbMock.getWithdrawalRequestById.mockResolvedValueOnce(
+      mockRequest,
+    );
+
+    const result =
+      await withdrawalService.getWithdrawalRequestById(withdrawalId);
+
+    expect(result).toEqual(mockRequest);
+    expect(withdrawalDbMock.getWithdrawalRequestById).toHaveBeenCalledWith(
+      withdrawalId,
+    );
+  });
+
+  it("should return null when the withdrawal request is not found", async () => {
+    const withdrawalId = 1;
+
+    withdrawalDbMock.getWithdrawalRequestById.mockResolvedValueOnce(null);
+
+    const result =
+      await withdrawalService.getWithdrawalRequestById(withdrawalId);
+
+    expect(result).toBeNull();
+    expect(withdrawalDbMock.getWithdrawalRequestById).toHaveBeenCalledWith(
+      withdrawalId,
+    );
+  });
+});
+
+describe("approveWithdrawalRequest", () => {
+  let withdrawalService: WithdrawalService;
+  let requestServiceMock: any;
+  let employeeServiceMock: jest.Mocked<EmployeeService>;
+  let logServiceMock: any;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
+  let withdrawalDbMock: any;
+
+  beforeEach(() => {
+    withdrawalDbMock = {
+      approveWithdrawalRequest: jest.fn(),
+    };
+
+    requestServiceMock = {
+      setWithdrawnStatus: jest.fn(),
+    };
+
+    reassignmentServiceMock = {
+      getReassignmentActive: jest.fn(),
+    } as any;
+
+    employeeServiceMock = {
+      getEmployee: jest.fn(),
+    } as any;
+
+    logServiceMock = {
+      logRequestHelper: jest.fn(),
+    };
+
+    withdrawalService = new WithdrawalService(
+      logServiceMock,
+      withdrawalDbMock,
+      requestServiceMock,
+      reassignmentServiceMock,
+      employeeServiceMock,
+    );
+  });
+
+  it("should return null if the request is not found or not pending", async () => {
+    const performedBy = 2;
+    const withdrawalId = 1;
+
+    withdrawalService.getWithdrawalRequestById = jest
+      .fn()
+      .mockResolvedValueOnce(null as never) as any;
+
+    const result = await withdrawalService.approveWithdrawalRequest(
+      performedBy,
+      withdrawalId,
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it("should return null if the performer is not the reporting manager and there is no active reassignment", async () => {
+    const performedBy = 2;
+    const withdrawalId = 1;
+    const mockRequest = {
+      id: withdrawalId,
+      status: Status.PENDING,
+      requestId: 100,
+      reportingManager: 1,
+    };
+
+    withdrawalService.getWithdrawalRequestById = jest
+      .fn()
+      .mockResolvedValueOnce(mockRequest as never) as any;
+    reassignmentServiceMock.getReassignmentActive.mockResolvedValueOnce(null);
+
+    const result = await withdrawalService.approveWithdrawalRequest(
+      performedBy,
+      withdrawalId,
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it("should return null if approving the withdrawal request fails", async () => {
+    const performedBy = 2;
+    const withdrawalId = 1;
+    const mockRequest = {
+      id: withdrawalId,
+      status: Status.PENDING,
+      requestId: 100,
+      reportingManager: 1,
+    };
+
+    withdrawalService.getWithdrawalRequestById = jest
+      .fn()
+      .mockResolvedValueOnce(mockRequest as never) as any;
+    withdrawalDbMock.approveWithdrawalRequest.mockResolvedValueOnce(false);
+
+    const result = await withdrawalService.approveWithdrawalRequest(
+      performedBy,
+      withdrawalId,
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it("should return null if setting the withdrawn status fails", async () => {
+    const performedBy = 2;
+    const withdrawalId = 1;
+    const mockRequest = {
+      id: withdrawalId,
+      status: Status.PENDING,
+      requestId: 100,
+      reportingManager: 1,
+    };
+
+    withdrawalService.getWithdrawalRequestById = jest
+      .fn()
+      .mockResolvedValueOnce(mockRequest as never) as any;
+    withdrawalDbMock.approveWithdrawalRequest.mockResolvedValueOnce(true);
+    requestServiceMock.setWithdrawnStatus.mockReturnValueOnce(false);
+
+    const result = await withdrawalService.approveWithdrawalRequest(
+      performedBy,
+      withdrawalId,
+    );
+
+    expect(result).toBeNull();
+  });
+});
+
+describe("updateWithdrawalStatusToExpired", () => {
+  let withdrawalService: WithdrawalService;
+  let withdrawalDbMock: any;
+  let logServiceMock: any;
+  let requestServiceMock: any;
+  let employeeServiceMock: jest.Mocked<EmployeeService>;
+  let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
+
+  beforeEach(() => {
+    withdrawalDbMock = {
+      updateWithdrawalStatusToExpired: jest.fn(),
+    };
+
+    logServiceMock = {
+      logRequestHelper: jest.fn(),
+    };
+
+    withdrawalService = new WithdrawalService(
+      logServiceMock,
+      withdrawalDbMock,
+      requestServiceMock,
+      reassignmentServiceMock,
+      employeeServiceMock,
+    );
+  });
+
+  it("should update withdrawal status to expired and log the action", async () => {
+    const mockWithdrawalRequest = {
+      requestId: 1,
+    };
+
+    withdrawalDbMock.updateWithdrawalStatusToExpired.mockResolvedValueOnce(
+      mockWithdrawalRequest,
+    );
+
+    await withdrawalService.updateWithdrawalStatusToExpired();
+
+    expect(withdrawalDbMock.updateWithdrawalStatusToExpired).toHaveBeenCalled();
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
+      performedBy: PerformedBy.SYSTEM,
+      requestId: mockWithdrawalRequest.requestId,
+      requestType: "WITHDRAWAL",
+      action: Action.EXPIRE,
+      dept: PerformedBy.PERFORMED_BY_SYSTEM,
+      position: PerformedBy.PERFORMED_BY_SYSTEM,
+    });
+  });
+
+  it("should not log the action if no withdrawal requests are returned", async () => {
+    withdrawalDbMock.updateWithdrawalStatusToExpired.mockResolvedValueOnce(
+      null,
+    );
+
+    await withdrawalService.updateWithdrawalStatusToExpired();
+
+    expect(withdrawalDbMock.updateWithdrawalStatusToExpired).toHaveBeenCalled();
+    expect(logServiceMock.logRequestHelper).not.toHaveBeenCalled();
   });
 });

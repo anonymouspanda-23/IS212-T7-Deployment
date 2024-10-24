@@ -1,18 +1,22 @@
 import UtilsController from "@/controllers/UtilsController";
 import EmployeeDb from "@/database/EmployeeDb";
 import LogDb from "@/database/LogDb";
+import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
 import {
   AccessControl,
   Action,
   errMsg,
   HttpStatusResponse,
+  PerformedBy,
   Role,
 } from "@/helpers";
 import { initializeCounter } from "@/helpers/counter";
 import * as dateUtils from "@/helpers/date";
 import { dayWeekAfter } from "@/helpers/unitTestFunctions";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
+import { IEmployee } from "@/models/Employee";
+import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
 import { middlewareMockData } from "@/tests/middlewareMockData";
 import { generateMockEmployeeTest, mockRequestData } from "@/tests/mockData";
@@ -21,9 +25,6 @@ import dayjs from "dayjs";
 import { Context, Next } from "koa";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
-import ReassignmentDb from "@/database/ReassignmentDb";
-import ReassignmentService from "@/services/ReassignmentService";
-import { IEmployee } from "@/models/Employee";
 
 beforeAll(() => {
   initializeCounter("requestId");
@@ -799,6 +800,69 @@ describe("get schedule", () => {
     });
   });
 
+  it("should assign WFH staff correctly when department has WFH staff", async () => {
+    const staffId = 3;
+    const employee = {
+      role: Role.Manager,
+      position: "Manager",
+      reportingManager: 4,
+      dept: "Marketing",
+      staffFName: "Alice",
+      staffLName: "Johnson",
+      reportingManagerName: "Bob Brown",
+    };
+
+    const allDeptTeamCount = {
+      Marketing: {
+        teams: {
+          Manager: [],
+        },
+      },
+    };
+
+    const wfhStaff = {
+      Marketing: [
+        { name: "Charlie Black", position: "Developer" },
+        { name: "Diana White", position: "Designer" },
+      ],
+    };
+
+    const activeReassignment = {
+      active: false,
+      originalManagerDept: "Marketing",
+    };
+
+    employeeServiceMock.getEmployee.mockResolvedValue(employee);
+    employeeServiceMock.getAllDeptTeamCount.mockResolvedValue(allDeptTeamCount);
+    requestDbMock.getAllDeptSchedule.mockResolvedValue(wfhStaff);
+    reassignmentServiceMock.getActiveReassignmentAsTempManager.mockResolvedValue(
+      activeReassignment,
+    );
+
+    const result = await requestService.getSchedule(staffId);
+
+    expect(result).toEqual({
+      Marketing: {
+        teams: {
+          Manager: [],
+        },
+        wfhStaff: [
+          { name: "Charlie Black", position: "Developer" },
+          { name: "Diana White", position: "Designer" },
+        ],
+      },
+    });
+
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
+      performedBy: staffId,
+      requestType: "APPLICATION",
+      action: Action.RETRIEVE,
+      staffName: "Alice Johnson",
+      dept: "Marketing",
+      position: "Manager",
+    });
+  });
+
   it("should return schedule for regular staff", async () => {
     const staffId = 3;
     const employee = {
@@ -1350,5 +1414,177 @@ describe("setWithdrawnStatus", () => {
     await requestService.setWithdrawnStatus(requestId);
 
     expect(requestDbMock.setWithdrawnStatus).toHaveBeenCalledWith(requestId);
+  });
+});
+
+describe("updateRequestStatusToExpired", () => {
+  let requestService: RequestService;
+  let logServiceMock: any;
+  let employeeServiceMock: any;
+  let requestDbMock: any;
+  let reassignmentServiceMock: any;
+
+  beforeEach(() => {
+    requestDbMock = {
+      updateRequestStatusToExpired: jest.fn(),
+    };
+
+    logServiceMock = {
+      logRequestHelper: jest.fn(),
+    };
+
+    requestService = new RequestService(
+      logServiceMock,
+      employeeServiceMock,
+      requestDbMock,
+      reassignmentServiceMock,
+    );
+  });
+
+  it("should log the correct requests when there are requests to expire", async () => {
+    const mockRequests = [{ requestId: 1 }, { requestId: 2 }];
+
+    requestDbMock.updateRequestStatusToExpired.mockResolvedValue(mockRequests);
+
+    await requestService.updateRequestStatusToExpired();
+
+    expect(requestDbMock.updateRequestStatusToExpired).toHaveBeenCalled();
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledTimes(2);
+
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
+      performedBy: PerformedBy.SYSTEM,
+      requestId: 1,
+      requestType: "REASSIGNMENT",
+      action: Action.EXPIRE,
+      dept: PerformedBy.PERFORMED_BY_SYSTEM,
+      position: PerformedBy.PERFORMED_BY_SYSTEM,
+    });
+
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
+      performedBy: PerformedBy.SYSTEM,
+      requestId: 2,
+      requestType: "REASSIGNMENT",
+      action: Action.EXPIRE,
+      dept: PerformedBy.PERFORMED_BY_SYSTEM,
+      position: PerformedBy.PERFORMED_BY_SYSTEM,
+    });
+  });
+
+  it("should not log anything when there are no requests", async () => {
+    requestDbMock.updateRequestStatusToExpired.mockResolvedValue([]);
+
+    await requestService.updateRequestStatusToExpired();
+
+    expect(requestDbMock.updateRequestStatusToExpired).toHaveBeenCalled();
+    expect(logServiceMock.logRequestHelper).not.toHaveBeenCalled();
+  });
+});
+
+describe("revokeRequest", () => {
+  let requestService: RequestService;
+  let logServiceMock: any;
+  let employeeServiceMock: any;
+  let requestDbMock: any;
+  let reassignmentServiceMock: any;
+
+  beforeEach(() => {
+    requestDbMock = {
+      revokeRequest: jest.fn(),
+    };
+
+    employeeServiceMock = {
+      getEmployee: jest.fn(),
+    };
+
+    reassignmentServiceMock = {
+      getReassignmentActive: jest.fn(),
+    };
+
+    logServiceMock = {
+      logRequestHelper: jest.fn(),
+    };
+
+    requestService = new RequestService(
+      logServiceMock,
+      employeeServiceMock,
+      requestDbMock,
+      reassignmentServiceMock,
+    );
+  });
+
+  it("should return null if the request does not exist", async () => {
+    const performedBy = 1;
+    const requestId = 2;
+    const reason = "No longer needed";
+
+    requestService.getApprovedRequestByRequestId = jest
+      .fn()
+      .mockResolvedValue(null as never) as any;
+
+    const result = await requestService.revokeRequest(
+      performedBy,
+      requestId,
+      reason,
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it("should return null if the user is not the reporting manager and no reassignment exists", async () => {
+    const performedBy = 1;
+    const requestId = 2;
+    const reason = "No longer needed";
+    const request = {
+      reportingManager: 3,
+      requestedDate: new Date(),
+      managerName: "Manager Name",
+    };
+
+    requestService.getApprovedRequestByRequestId = jest
+      .fn()
+      .mockResolvedValue(request as never) as any;
+    employeeServiceMock.getEmployee.mockResolvedValue({
+      dept: "Sales",
+      position: "Manager",
+    });
+    reassignmentServiceMock.getReassignmentActive.mockResolvedValue(null);
+
+    const result = await requestService.revokeRequest(
+      performedBy,
+      requestId,
+      reason,
+    );
+
+    expect(result).toBeNull();
+  });
+
+  it("should return null if the withdrawal date is past", async () => {
+    const performedBy = 1;
+    const requestId = 2;
+    const reason = "No longer needed";
+    const request = {
+      reportingManager: 3,
+      requestedDate: new Date(Date.now() - 100000000),
+      managerName: "Manager Name",
+    };
+
+    requestService.getApprovedRequestByRequestId = jest
+      .fn()
+      .mockResolvedValue(request as never) as any;
+    employeeServiceMock.getEmployee.mockResolvedValue({
+      dept: "Sales",
+      position: "Manager",
+    });
+    reassignmentServiceMock.getReassignmentActive.mockResolvedValue({
+      tempManagerName: "Temp Manager",
+    });
+
+    const result = await requestService.revokeRequest(
+      performedBy,
+      requestId,
+      reason,
+    );
+
+    expect(result).toBeNull();
   });
 });
