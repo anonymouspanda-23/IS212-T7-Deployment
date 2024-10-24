@@ -18,6 +18,8 @@ import WithdrawalService from "@/services/WithdrawalService";
 import swaggerSpec from "@/swagger";
 import Router from "koa-router";
 import { koaSwagger } from "koa2-swagger-ui";
+import Mailer from "@/config/mailer";
+import NotificationService from "@/services/NotificationService";
 
 /**
  * Databases
@@ -29,10 +31,16 @@ const logDb = new LogDb();
 const withdrawalDb = new WithdrawalDb();
 
 /**
+ * External Services
+ */
+const mailer = Mailer.getInstance();
+
+/**
  * Services
  */
 const employeeService = new EmployeeService(employeeDb);
 const logService = new LogService(logDb, employeeService);
+const notificationService = new NotificationService(employeeService, mailer);
 const reassignmentService = new ReassignmentService(
   reassignmentDb,
   requestDb,
@@ -42,6 +50,7 @@ const reassignmentService = new ReassignmentService(
 const requestService = new RequestService(
   logService,
   employeeService,
+  notificationService,
   requestDb,
   reassignmentService,
 );
