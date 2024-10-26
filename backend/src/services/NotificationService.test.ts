@@ -1,6 +1,7 @@
-import NotificationService from "@/services/NotificationService";
-import EmployeeService from "@/services/EmployeeService";
 import Mailer from "@/config/mailer";
+import { errMsg } from "@/helpers";
+import EmployeeService from "@/services/EmployeeService";
+import NotificationService from "@/services/NotificationService";
 import { jest } from "@jest/globals";
 import nodemailer from "nodemailer";
 
@@ -123,6 +124,53 @@ describe("NotificationService", () => {
       );
 
       expect(result).toBe("Failed to send email");
+    });
+  });
+
+  describe("notifyApproval", () => {
+    const emailSubject = "Email Subject";
+    const mockStaffEmail = "staff@lurence.org";
+    const mockEmailContent =
+      "You have a pending reassignment request from Jane Doe and requires your approval. Please login to the portal to approve the request";
+    const mockDateRange = [new Date("2024-10-25"), new Date("2024-10-28")];
+
+    it("should send an email successfully", async () => {
+      employeeServiceMock.getEmployee.mockResolvedValue({
+        staffFName: "John",
+        staffLName: "Doe",
+        email: "john.doe@lurence.org",
+      } as any);
+
+      const result = await notificationService.notifyApproval(
+        mockStaffEmail,
+        emailSubject,
+        mockEmailContent,
+        mockDateRange,
+      );
+
+      expect(result).toBe(true);
+      expect(mockMailer.getTransporter().sendMail).toHaveBeenCalled();
+    });
+
+    it("should return an error when sending email fails", async () => {
+      employeeServiceMock.getEmployee.mockResolvedValue({
+        staffFName: "John",
+        staffLName: "Doe",
+        email: "john.doe@example.com",
+      } as any);
+
+      (mockTransporter.sendMail as jest.Mock).mockRejectedValue(
+        new Error("Send failed") as never,
+      );
+
+      const result = await notificationService.notifyApproval(
+        mockStaffEmail,
+        emailSubject,
+        mockEmailContent,
+        mockDateRange,
+      );
+
+      expect(result).toBe(errMsg.FAILED_TO_SEND_EMAIL);
     });
   });
 });

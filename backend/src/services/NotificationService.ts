@@ -143,6 +143,52 @@ class NotificationService {
       return errMsg.FAILED_TO_SEND_EMAIL;
     }
   }
+
+  public async notifyApproval(
+    approveEmail: string,
+    emailSubject: string,
+    emailBodyContent: string,
+    dateRange: Date[],
+  ): Promise<any> {
+    const [startDate, endDate] = dateRange;
+    const emailContentHtml = this.approvalHtmlBody(
+      startDate,
+      endDate,
+      emailBodyContent,
+    );
+    try {
+      const emailContent = { text: "", html: emailContentHtml };
+      await this.sendEmail(emailSubject, approveEmail, emailContent);
+      return true;
+    } catch (error) {
+      return errMsg.FAILED_TO_SEND_EMAIL;
+    }
+  }
+
+  private approvalHtmlBody(
+    startDate: Date,
+    endDate: Date,
+    emailBodyContent: string,
+  ): string {
+    const tableRows = `
+    <tr>
+      <td style="border: 1px solid black; border-collapse: collapse;">${startDate} to ${endDate}</td>
+    </tr>
+  `;
+    return `
+    <html>
+       <p>${emailBodyContent}</p>
+      <body>
+        <table style="border: 1px solid black; border-collapse: collapse;">
+          <tr>
+            <th style="border: 1px solid black; border-collapse: collapse;">Requested Dates</th>
+          </tr>
+          ${tableRows}
+        </table>
+      </body>
+    </html>
+  `;
+  }
 }
 
 export default NotificationService;
