@@ -127,7 +127,7 @@ describe("NotificationService", () => {
     });
   });
 
-  describe("notifyApproval", () => {
+  describe("notify", () => {
     const emailSubject = "Email Subject";
     const mockStaffEmail = "staff@lurence.org";
     const mockEmailContent =
@@ -141,11 +141,12 @@ describe("NotificationService", () => {
         email: "john.doe@lurence.org",
       } as any);
 
-      const result = await notificationService.notifyApproval(
+      const result = await notificationService.notify(
         mockStaffEmail,
         emailSubject,
         mockEmailContent,
         mockDateRange,
+        null
       );
 
       expect(result).toBe(true);
@@ -163,11 +164,12 @@ describe("NotificationService", () => {
         new Error("Send failed") as never,
       );
 
-      const result = await notificationService.notifyApproval(
+      const result = await notificationService.notify(
         mockStaffEmail,
         emailSubject,
         mockEmailContent,
         mockDateRange,
+        null
       );
 
       expect(result).toBe(errMsg.FAILED_TO_SEND_EMAIL);

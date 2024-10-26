@@ -144,37 +144,64 @@ class NotificationService {
     }
   }
 
-  public async notifyApproval(
+  public async notify(
     approveEmail: string,
     emailSubject: string,
     emailBodyContent: string,
-    dateRange: Date[],
+    dateRange: Date[] | null,
+    requestedDates: [string, string][] | null,
   ): Promise<any> {
-    const [startDate, endDate] = dateRange;
-    const emailContentHtml = this.approvalHtmlBody(
-      startDate,
-      endDate,
-      emailBodyContent,
-    );
+    let emailContentHtml;
+    if (requestedDates) {
+      emailContentHtml = this.notifHtmlBody(
+        null,
+        requestedDates,
+        emailBodyContent,
+      );
+    } else if (dateRange) {
+      emailContentHtml = this.notifHtmlBody(
+        dateRange,
+        null,
+        emailBodyContent,
+      );
+    }
     try {
       const emailContent = { text: "", html: emailContentHtml };
-      await this.sendEmail(emailSubject, approveEmail, emailContent);
+      await this.sendEmail(emailSubject, approveEmail, emailContent as any);
       return true;
     } catch (error) {
       return errMsg.FAILED_TO_SEND_EMAIL;
     }
   }
 
-  private approvalHtmlBody(
-    startDate: Date,
-    endDate: Date,
+  private notifHtmlBody(
+    dateRange: Date[] | null,
+    requestedDates: [string, string][] | null,
     emailBodyContent: string,
   ): string {
-    const tableRows = `
+    let tableRows;
+    let tableHeader;
+    if (requestedDates) {
+      tableHeader = `<th style="border: 1px solid black; border-collapse: collapse;">Duration</th>`;
+      tableRows = requestedDates
+        .map(
+          ([date, type]) => `
+        <tr>
+            <td style="border: 1px solid black; border-collapse: collapse;">${date}</td>
+            <td style="border: 1px solid black; border-collapse: collapse;">${type}</td>
+        </tr>
+    `,
+        )
+        .join("");
+    } else if (dateRange) {
+      const [startDate, endDate] = dateRange;
+      tableHeader = "";
+      tableRows = `
     <tr>
       <td style="border: 1px solid black; border-collapse: collapse;">${startDate} to ${endDate}</td>
     </tr>
   `;
+    }
     return `
     <html>
        <p>${emailBodyContent}</p>
@@ -182,6 +209,7 @@ class NotificationService {
         <table style="border: 1px solid black; border-collapse: collapse;">
           <tr>
             <th style="border: 1px solid black; border-collapse: collapse;">Requested Dates</th>
+            ${tableHeader}
           </tr>
           ${tableRows}
         </table>

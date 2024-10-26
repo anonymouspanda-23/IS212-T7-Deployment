@@ -81,11 +81,12 @@ class ReassignmentService {
 
     const emailSubject = `[${Request.REASSIGNMENT}] Pending Reassignment Request`;
     const emailContent = `You have a pending reassignment request from ${managerName} and requires your approval. Please login to the portal to approve the request.`;
-    await this.notificationService.notifyApproval(
+    await this.notificationService.notify(
       tempReportingManager!.email,
       emailSubject,
       emailContent,
       [startDate, endDate],
+      null
     );
 
     /**
