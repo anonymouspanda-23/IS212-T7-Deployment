@@ -7,15 +7,15 @@ import {
   Switch,
   theme,
   Typography,
-  Badge,
+  Badge, Dropdown
 } from "antd";
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
-import { usePendingCount } from "@/pages/approve-reject/requestsCount"; // Importing the hook
+import { usePendingCount } from "@/pages/approve-reject/requestsCount";
 import { usePendingWithdrawalsCount } from "@/pages/manage-withdrawals/requestsCount";
 import { useReassignmentsCounts } from "@/pages/handle-reassignments/requestsCount";
 import { Button } from "antd";
-import { AlertOutlined } from "@ant-design/icons";
+import { AlertOutlined, MenuOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const { Text } = Typography;
@@ -38,6 +38,21 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   const { pendingCount } = usePendingCount();
   const { pendingWithdrawalsCount } = usePendingWithdrawalsCount();
   const { totalPendingCount } = useReassignmentsCounts();
+  const cutoff = 992;
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= cutoff);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= cutoff);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const headerStyles: React.CSSProperties = {
     backgroundColor: "transparent",
@@ -58,34 +73,78 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
     return pendingCount + pendingWithdrawalsCount + totalPendingCount;
   }, [pendingCount, pendingWithdrawalsCount, totalPendingCount]);
 
-  return (
-    <AntdLayout.Header style={headerStyles}>
-      <Space>
-
+  const menuItems = [
+    {
+      key: '1',
+      label: (
         <div hidden={user?.role == 2}>
           <Badge count={totalCount} offset={[-8, 0]}>
             <Button
               type="primary"
               icon={<AlertOutlined />}
-              style={{ marginRight: 8 }}
-              onClick={() => navigate("/mainRequests")} // Navigate to the route on click
-              >
+              onClick={() => navigate("/mainRequests")}
+            >
               Incoming Requests
             </Button>
           </Badge>
         </div>
-
-        <Space style={{ marginLeft: "8px" }} size="middle">
-          {user?.name && <Text strong>{user.name}</Text>}
-          {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}
-        </Space>
+      ),
+    },
+    {
+      key: '2',
+      label: (
         <Switch
-          // checkedChildren="🌛"
-          // unCheckedChildren="🔆"
+          checkedChildren="🌛"
+          unCheckedChildren="🔆"
           onChange={() => setMode(mode === "dark" ? "light" : "dark")}
           defaultChecked={mode === "dark"}
         />
-      </Space>
+      ),
+    },
+  ];
+
+  return (
+    <AntdLayout.Header style={headerStyles}>
+      { isMobile ? (
+        <Space>
+          <Space style={{ marginLeft: "8px" }} size="middle">
+            {user?.name && <Text strong>{user.name}</Text>}
+            {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}
+          </Space>
+          <Badge count={totalCount} offset={[0, 0]}>
+            <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+              <Button icon={<MenuOutlined />} />
+            </Dropdown>
+          </Badge>
+        </Space>
+      ) : (
+        <Space>
+
+          <div hidden={user?.role == 2}>
+            <Badge count={totalCount} offset={[-8, 0]}>
+              <Button
+                type="primary"
+                icon={<AlertOutlined />}
+                style={{ marginRight: 8 }}
+                onClick={() => navigate("/mainRequests")} // Navigate to the route on click
+              >
+                Incoming Requests
+              </Button>
+            </Badge>
+          </div>
+
+          <Space style={{ marginLeft: "8px" }} size="middle">
+            {user?.name && <Text strong>{user.name}</Text>}
+            {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}
+          </Space>
+          <Switch
+            checkedChildren="🌛"
+            unCheckedChildren="🔆"
+            onChange={() => setMode(mode === "dark" ? "light" : "dark")}
+            defaultChecked={mode === "dark"}
+          />
+        </Space>
+      ) }
     </AntdLayout.Header>
   );
 };

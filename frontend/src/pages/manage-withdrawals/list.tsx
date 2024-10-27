@@ -86,6 +86,7 @@ export const ManageWithdrawals: React.FC = () => {
     pending: withdrawals.filter((w) => w.status === "PENDING").length,
     approved: withdrawals.filter((w) => w.status === "APPROVED").length,
     rejected: withdrawals.filter((w) => w.status === "REJECTED").length,
+    expired: withdrawals.filter((w)=> w.status === "EXPIRED").length
   });
 
   const handleEditClick = (withdrawal: any) => {
@@ -214,7 +215,10 @@ export const ManageWithdrawals: React.FC = () => {
                 ? "green"
                 : status === "REJECTED"
                   ? "red"
+                  : status === "EXPIRED"
+                  ? "gray"
                   : "pink"
+
           }
         />
       ),
@@ -225,7 +229,7 @@ export const ManageWithdrawals: React.FC = () => {
       render: (_: any, record: any) => (
         <Button
           onClick={() => handleEditClick(record)}
-          disabled={record.status === "APPROVED"}
+          disabled={record.status === "APPROVED" || record.status === "EXPIRED"}
         >
           Edit
         </Button>
@@ -241,23 +245,10 @@ export const ManageWithdrawals: React.FC = () => {
         <Col xs={24} md={12}>
           <Title level={3}>Manage Withdrawals</Title>
         </Col>
-        <Col xs={24} md={12} style={{ textAlign: "right" }}>
-          <Select
-            placeholder="Filter by status"
-            style={{ width: "100%", maxWidth: 200, marginBottom: 16 }}
-            onChange={(value) => setFilterStatus(value)}
-            allowClear
-          >
-            <Select.Option value={undefined}>All</Select.Option>
-            <Select.Option value="PENDING">Pending</Select.Option>
-            <Select.Option value="APPROVED">Approved</Select.Option>
-            <Select.Option value="REJECTED">Rejected</Select.Option>
-          </Select>
-        </Col>
       </Row>
 
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={12} lg={6}>
           <Card bordered={false}>
             <Statistic
               title="Pending Withdrawals"
@@ -266,7 +257,7 @@ export const ManageWithdrawals: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={12} lg={6}>
           <Card bordered={false}>
             <Statistic
               title="Approved Withdrawals"
@@ -275,7 +266,7 @@ export const ManageWithdrawals: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={12} lg={6}>
           <Card bordered={false}>
             <Statistic
               title="Rejected Withdrawals"
@@ -283,6 +274,31 @@ export const ManageWithdrawals: React.FC = () => {
               formatter={formatter}
             />
           </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card bordered={false}>
+            <Statistic
+              title="Expired Withdrawals"
+              value={counts.expired}
+              formatter={formatter}
+            />
+          </Card>
+        </Col>
+        </Row>
+        <Row justify="end" style={{ marginTop: 50, marginBottom: 16 }}>
+        <Col>
+          <Select
+            placeholder="Filter by status"
+            style={{ width: 200 }}
+            onChange={(value) => setFilterStatus(value)}
+            allowClear
+          >
+            <Select.Option value={undefined}>All</Select.Option>
+            <Select.Option value="PENDING">Pending</Select.Option>
+            <Select.Option value="APPROVED">Approved</Select.Option>
+            <Select.Option value="REJECTED">Rejected</Select.Option>
+            <Select.Option value="EXPIRED">Expired</Select.Option>
+          </Select>
         </Col>
       </Row>
       <div style={{ overflowX: "auto", marginTop: 16 }}>
