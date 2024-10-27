@@ -479,6 +479,29 @@ router.get("/getReassignmentStatus", (ctx) =>
 
 /**
  * @openapi
+ * /api/v1/getTempMgrReassignmentStatus:
+ *   get:
+ *     description: Get all reassignment status
+ *     tags: [Reassignment]
+ *     parameters:
+ *       - in: header
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Temp Manager's Staff Id
+ *     responses:
+ *       200:
+ *         description: Returns all reassignment status
+ */
+router.get("/getTempMgrReassignmentStatus", (ctx) =>
+  reassignmentController.getTempMgrReassignmentStatus(ctx),
+);
+
+
+
+/**
+ * @openapi
 
  * /api/v1/getIncomingReassignmentRequests:
  *   get:

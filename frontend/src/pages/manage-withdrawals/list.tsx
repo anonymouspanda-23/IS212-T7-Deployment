@@ -21,6 +21,7 @@ import {
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import CountUp from "react-countup";
+import { usePendingWithdrawalsCount } from "./requestsCount";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const { Title } = Typography;
@@ -46,6 +47,7 @@ export const ManageWithdrawals: React.FC = () => {
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<any>(null);
   const [formValues, setFormValues] = useState<any>(null);
+  const { pendingWithdrawalsCount, fetchPendingWithdrawals } = usePendingWithdrawalsCount();
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -162,6 +164,7 @@ export const ManageWithdrawals: React.FC = () => {
       setSelectedWithdrawal(null);
       setFormValues(null);
       form.resetFields();
+      await fetchPendingWithdrawals();
     }
   };
 

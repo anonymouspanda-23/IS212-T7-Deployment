@@ -48,6 +48,19 @@ class ReassignmentController {
     ctx.body = reassignmentReq;
   }
 
+  
+  public async getTempMgrReassignmentStatus(ctx: Context) {
+    const { id } = ctx.request.header;
+    if (!id) {
+      return UtilsController.throwAPIError(ctx, errMsg.MISSING_HEADER);
+    }
+    const sanitisedStaffId = numberSchema.parse(id);
+    const reassignmentReq =
+      await this.reassignmentService.getTempMgrReassignmentStatus(sanitisedStaffId);
+
+    ctx.body = reassignmentReq;
+  }
+
   public async getIncomingReassignmentRequests(ctx: Context) {
     const { id } = ctx.request.header;
     if (!id) {

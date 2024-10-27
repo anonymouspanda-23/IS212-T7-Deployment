@@ -62,6 +62,7 @@ export const IncomingList: React.FC = () => {
         EXPIRED: "Expired",
         WITHDRAWN: "Withdrawn",
         REVOKED: "Revoked",
+        CANCELLED: "Cancelled"
       };
 
       const pendingRequests = response.data.map((request: any) => ({
@@ -120,6 +121,7 @@ export const IncomingList: React.FC = () => {
         rejected: 0,
         withdrawn: 0,
         revoked: 0,
+        cancelled: 0
       };
     }
 
@@ -141,6 +143,9 @@ export const IncomingList: React.FC = () => {
       ).length,
       withdrawn: dataSource.filter(
         (post) => post.status.toLowerCase() === "withdrawn",
+      ).length,
+      cancelled: dataSource.filter(
+        (post) => post.status.toLowerCase() === "cancelled",
       ).length,
     };
   };

@@ -123,6 +123,28 @@ class ReassignmentService {
     return await this.reassignmentDb.getReassignmentRequest(staffId);
   }
 
+  public async getTempMgrReassignmentStatus(staffId: number) {
+    const { staffFName, staffLName, dept, position }: any =
+      await this.employeeService.getEmployee(staffId);
+
+    const staffName = `${staffFName} ${staffLName}`;
+
+    /**
+     * Logging
+     */
+    await this.logService.logRequestHelper({
+      performedBy: staffId,
+      requestType: Request.REASSIGNMENT,
+      action: Action.RETRIEVE,
+      staffName: staffName,
+      dept: dept as Dept,
+      position: position,
+    });
+
+    return await this.reassignmentDb.getTempMgrReassignmentRequest(staffId);
+  }
+
+
   public async setActiveReassignmentPeriod(): Promise<void> {
     const isActiveUpdated =
       await this.reassignmentDb.setActiveReassignmentPeriod();
@@ -222,7 +244,7 @@ class ReassignmentService {
 
     // filter approved requests based on reassignment dates
     return subordinateRequests.filter((request) => {
-      if (request.status === Status.APPROVED) {
+      if (request.status === Status.APPROVED || request.status === Status.REJECTED) {
         const requestDate = new Date(request.requestedDate);
         const reassignmentStartDate = new Date(reassignment.startDate);
         const reassignmentEndDate = new Date(reassignment.endDate);

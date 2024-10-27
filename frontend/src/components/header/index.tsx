@@ -9,9 +9,11 @@ import {
   Typography,
   Badge,
 } from "antd";
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useMemo } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { usePendingCount } from "@/pages/approve-reject/requestsCount"; // Importing the hook
+import { usePendingWithdrawalsCount } from "@/pages/manage-withdrawals/requestsCount";
+import { useReassignmentsCounts } from "@/pages/handle-reassignments/requestsCount";
 import { Button } from "antd";
 import { AlertOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -34,6 +36,8 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
   const { mode, setMode } = useContext(ColorModeContext);
   const navigate = useNavigate(); // Hook to handle navigation
   const { pendingCount } = usePendingCount();
+  const { pendingWithdrawalsCount } = usePendingWithdrawalsCount();
+  const { totalPendingCount } = useReassignmentsCounts();
 
   const headerStyles: React.CSSProperties = {
     backgroundColor: "transparent",
@@ -50,12 +54,16 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
     headerStyles.zIndex = 1;
   }
 
+  const totalCount = useMemo(() => {
+    return pendingCount + pendingWithdrawalsCount + totalPendingCount;
+  }, [pendingCount, pendingWithdrawalsCount, totalPendingCount]);
+
   return (
     <AntdLayout.Header style={headerStyles}>
       <Space>
 
         <div hidden={user?.role == 2}>
-          <Badge count={pendingCount} offset={[-8, 0]}>
+          <Badge count={totalCount} offset={[-8, 0]}>
             <Button
               type="primary"
               icon={<AlertOutlined />}

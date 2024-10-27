@@ -51,6 +51,16 @@ class ReassignmentDb {
     return reassignmentRequest;
   }
 
+  public async getTempMgrReassignmentRequest(staffId: number) {
+    const reassignmentRequest = await Reassignment.find(
+      {
+        tempReportingManagerId: staffId,
+      },
+      "-_id -createdAt -updatedAt",
+    );
+    return reassignmentRequest;
+  }
+
   public async getReassignmentActive(
     staffId: number,
     tempReportingManagerId: number,
