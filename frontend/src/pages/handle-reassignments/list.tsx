@@ -253,7 +253,7 @@ export const HandleReassignments: React.FC = () => {
           `${backendUrl}/api/v1/handleReassignmentRequest`,
           {
             reassignmentId: selectedReassignment.reassignmentId,
-            action: formValues.status === Status.APPROVED ? Action.APPROVE : Action.REJECT,
+            action: formValues.status === Action.APPROVE ? Action.APPROVE : Action.REJECT,
           },
           { headers: { id: user.staffId } }
         );
@@ -266,7 +266,7 @@ export const HandleReassignments: React.FC = () => {
         }
       } else if (selectedRequest) {
         // Handle WFH request
-        if (formValues.status === Status.APPROVED) {
+        if (formValues.status === Action.APPROVE) {
           response = await axios.post(
             `${backendUrl}/api/v1/approveRequest`,
             {
@@ -291,7 +291,7 @@ export const HandleReassignments: React.FC = () => {
 
       toast.open({
         message: "Success",
-        description: `Request has been ${formValues.status.toLowerCase()} successfully.`,
+        description: `Request has been ${formValues.status.toLowerCase()}${formValues.status.toLowerCase() == 'approve' ? 'd' : 'ed'} successfully.`,
         type: "success",
       });
     } catch (error) {
