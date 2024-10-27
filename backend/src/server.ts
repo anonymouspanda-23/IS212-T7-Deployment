@@ -1,7 +1,6 @@
-import http from "http";
+import { app } from "./index";
 import { initDB, startCronJob } from "./config";
 import { Mailer } from "./config/mailer";
-import { app } from "./index";
 
 const PORT = process.env.PORT || 3001;
 const mailer = Mailer.getInstance();
@@ -12,7 +11,3 @@ app.listen(PORT, () => {
   startCronJob();
   mailer.getTransporter();
 });
-
-const server = http.createServer(app.callback());
-
-export { server };
