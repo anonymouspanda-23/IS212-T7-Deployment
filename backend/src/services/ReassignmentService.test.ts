@@ -173,6 +173,78 @@ describe("getReassignmentStatus", () => {
   });
 });
 
+describe("getTempMgrReassignmentStatus", () => {
+  let reassignmentService: ReassignmentService;
+  let mockEmployeeService: any;
+  let mockReassignmentDb: any;
+  let mockRequestDb: any;
+  let mockLogService: any;
+  let mockNotificationService: any;
+
+  const staffId = 1;
+  const employeeData = {
+    staffFName: "John",
+    staffLName: "Doe",
+    dept: "Engineering",
+    position: "Senior Engineer",
+  };
+
+  const tempMgrReassignmentRequest = {
+    id: 1,
+    status: "PENDING",
+  };
+
+  beforeEach(() => {
+    mockEmployeeService = {
+      getEmployee: jest.fn(),
+    };
+
+    mockReassignmentDb = {
+      getTempMgrReassignmentRequest: jest.fn(),
+    };
+
+    mockLogService = {
+      logRequestHelper: jest.fn(),
+    };
+
+    reassignmentService = new ReassignmentService(
+      mockReassignmentDb,
+      mockRequestDb,
+      mockEmployeeService,
+      mockLogService,
+      mockNotificationService,
+    );
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should retrieve temporary manager reassignment status and log the request", async () => {
+    mockEmployeeService.getEmployee.mockResolvedValue(employeeData);
+    mockReassignmentDb.getTempMgrReassignmentRequest.mockResolvedValue(
+      tempMgrReassignmentRequest,
+    );
+
+    const result = await reassignmentService.getTempMgrReassignmentStatus(staffId);
+
+    expect(mockEmployeeService.getEmployee).toHaveBeenCalledWith(staffId);
+    expect(mockLogService.logRequestHelper).toHaveBeenCalledWith({
+      performedBy: staffId,
+      requestType: Request.REASSIGNMENT,
+      action: Action.RETRIEVE,
+      staffName: "John Doe",
+      dept: "Engineering",
+      position: "Senior Engineer",
+    });
+    expect(mockReassignmentDb.getTempMgrReassignmentRequest).toHaveBeenCalledWith(
+      staffId,
+    );
+    expect(result).toEqual(tempMgrReassignmentRequest);
+  });
+});
+
+
 describe("setActiveReassignmentPeriod", () => {
   let reassignmentService: ReassignmentService;
   let mockReassignmentDb: any;

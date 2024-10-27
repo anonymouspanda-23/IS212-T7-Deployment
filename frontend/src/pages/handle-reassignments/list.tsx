@@ -628,7 +628,7 @@ export const HandleReassignments: React.FC = () => {
               }
             >
               {({ getFieldValue }) =>
-                getFieldValue("status") === Status.REJECTED ? (
+                getFieldValue("status") === Action.REJECT ? (
                   <Form.Item
                     name="reason"
                     label="Reason"
@@ -700,7 +700,7 @@ export const HandleReassignments: React.FC = () => {
               }
             >
               {({ getFieldValue }) =>
-                getFieldValue("status") === "REJECTED" ? (
+                getFieldValue("status") === Action.REJECT ? (
                   <Form.Item
                     name="reason"
                     label="Reason"

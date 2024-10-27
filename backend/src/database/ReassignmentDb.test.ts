@@ -44,6 +44,19 @@ describe("ReassignmentDb", () => {
     });
   });
 
+  describe("getTempMgrReassignmentRequest", () => {
+    it("should return reassignment requests for a specific tempReportingManagerId", async () => {
+      const staffId = 1;
+      (Reassignment.find as jest.Mock).mockResolvedValue([{ tempReportingManagerId: staffId }]);
+      const result = await reassignmentDb.getTempMgrReassignmentRequest(staffId);
+      expect(Reassignment.find).toHaveBeenCalledWith(
+        { tempReportingManagerId: staffId },
+        "-_id -createdAt -updatedAt",
+      );
+      expect(result).toEqual([{ tempReportingManagerId: staffId }]);
+    });
+  });
+
   describe("getReassignmentActive", () => {
     it("should return an active reassignment request for a specific staffId and tempReportingManagerId", async () => {
       const staffId = 1;

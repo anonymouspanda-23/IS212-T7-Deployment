@@ -24,7 +24,7 @@ export const useReassignmentsCounts = () => {
   const getReassignmentStatus = async (staffId: string) => {
     try {
       const response = await axios.get(
-        `${backendUrl}/api/v1/getReassignmentStatus`,
+        `${backendUrl}/api/v1/getTempMgrReassignmentStatus`,
         { headers: { id: staffId } }
       );
       
