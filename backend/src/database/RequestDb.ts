@@ -51,7 +51,7 @@ class RequestDb {
   public async cancelPendingRequests(
     staffId: number,
     requestId: number,
-  ): Promise<string | null> {
+  ): Promise<any | null> {
     const { modifiedCount } = await Request.updateMany(
       {
         staffId,
@@ -69,7 +69,13 @@ class RequestDb {
       return null;
     }
 
-    return HttpStatusResponse.OK;
+    const updatedRequests = await Request.find({
+      staffId,
+      requestId,
+      status: Status.CANCELLED,
+    });
+
+    return updatedRequests;
   }
 
   public async getPendingOrApprovedRequests(myId: number) {
@@ -182,9 +188,7 @@ class RequestDb {
     return requests;
   }
 
-  public async approveRequest(
-    requestId: number,
-  ): Promise<string | null> {
+  public async approveRequest(requestId: number): Promise<string | null> {
     const { modifiedCount } = await Request.updateMany(
       {
         requestId,

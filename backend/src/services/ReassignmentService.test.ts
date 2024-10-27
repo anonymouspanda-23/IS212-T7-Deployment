@@ -509,6 +509,9 @@ describe("handleReassignmentRequest", () => {
       getIncomingReassignmentRequests: jest.fn(),
       updateReassignmentStatus: jest.fn(),
     };
+    mockEmployeeService = {
+      getEmployee: jest.fn(),
+    } as any;
 
     reassignmentService = new ReassignmentService(
       mockReassignmentDb,

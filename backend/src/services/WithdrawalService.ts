@@ -109,6 +109,37 @@ class WithdrawalService {
     // Update original request initiatedWithdrawal boolean to true
     await this.requestService.updateRequestinitiatedWithdrawalValue(requestId);
 
+    const employee = await this.employeeService.getEmployee(Number(staffId));
+    const manager = await this.employeeService.getEmployee(
+      Number(reportingManager),
+    );
+    const dayjsDate = dayjs(requestedDate);
+    const formattedDate = dayjsDate.format("YYYY-MM-DD");
+    const reqDate: [string, string][] = [
+      [String(formattedDate), String(request.requestType)],
+    ];
+    if (employee && manager) {
+      let emailSubject = `[${Request.WITHDRAWAL}] Pending Withdrawal Request`;
+      let emailContent = `Your withdrawal request has been sent to ${manager.staffFName} ${manager.staffLName}, ${manager.email} (${manager.dept} - ${manager.position}).`;
+      await this.notificationService.notify(
+        employee.email,
+        emailSubject,
+        emailContent,
+        null,
+        reqDate,
+      );
+
+      emailSubject = `[${Request.WITHDRAWAL}] Pending Withdrawal Request`;
+      emailContent = `You have a pending withdrawal request from ${employee.staffFName} ${employee.staffLName}, ${employee.email} (${employee.dept} - ${employee.position}).<br><br>Please login to the portal to approve the request.`;
+      await this.notificationService.notify(
+        manager.email,
+        emailSubject,
+        emailContent,
+        null,
+        reqDate,
+      );
+    }
+
     await this.logService.logRequestHelper({
       performedBy: staffId,
       requestType: Request.WITHDRAWAL,
@@ -220,12 +251,28 @@ class WithdrawalService {
     if (!withdrawalApproval) {
       return null;
     }
-    const result = this.requestService.setWithdrawnStatus(request.requestId);
+    const result = await this.requestService.setWithdrawnStatus(request.requestId);
     if (!result) {
       return null;
     }
     const managerDetails = await this.employeeService.getEmployee(performedBy);
-    if (managerDetails) {
+    const employee = await this.employeeService.getEmployee(request.staffId);
+
+    if (managerDetails && employee) {
+      const emailSubject = `[${Request.WITHDRAWAL}] Withdrawal Approved`;
+      const emailContent = `Your withdrawal request has been approved by ${managerDetails.staffFName} ${managerDetails.staffLName}, ${managerDetails.email} (${managerDetails.dept} - ${managerDetails.position}).<br><br>Please login to the portal to view the request.`;
+      const dayjsDate = dayjs(request.requestedDate);
+      const formattedDate = dayjsDate.format("YYYY-MM-DD");
+      const requestedDate: [string, string][] = [
+        [String(formattedDate), String(request.requestType)],
+      ];
+      await this.notificationService.notify(
+        employee.email,
+        emailSubject,
+        emailContent,
+        null,
+        requestedDate,
+      );
       await this.logService.logRequestHelper({
         performedBy: performedBy,
         requestType: Request.WITHDRAWAL,
@@ -267,7 +314,22 @@ class WithdrawalService {
       return null;
     }
     const managerDetails = await this.employeeService.getEmployee(performedBy);
-    if (managerDetails) {
+    const employee = await this.employeeService.getEmployee(request.staffId);
+    if (managerDetails && employee) {
+      const emailSubject = `[${Request.WITHDRAWAL}] Withdrawal Rejected`;
+      const emailContent = `Your withdrawal request has been rejected by ${managerDetails.staffFName} ${managerDetails.staffLName}, ${managerDetails.email} (${managerDetails.dept} - ${managerDetails.position}).<br><br>Reason: ${reason}<br><br>Please login to the portal to view the request.`;
+      const dayjsDate = dayjs(request.requestedDate);
+      const formattedDate = dayjsDate.format("YYYY-MM-DD");
+      const requestedDate: [string, string][] = [
+        [String(formattedDate), String(request.requestType)],
+      ];
+      await this.notificationService.notify(
+        employee.email,
+        emailSubject,
+        emailContent,
+        null,
+        requestedDate,
+      );
       await this.logService.logRequestHelper({
         performedBy: performedBy,
         requestType: Request.WITHDRAWAL,

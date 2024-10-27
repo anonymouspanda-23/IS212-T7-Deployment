@@ -132,7 +132,7 @@ describe("NotificationService", () => {
     const mockStaffEmail = "staff@lurence.org";
     const mockEmailContent =
       "You have a pending reassignment request from Jane Doe and requires your approval. Please login to the portal to approve the request";
-    const mockDateRange = [new Date("2024-10-25"), new Date("2024-10-28")];
+    const mockDateRange = ["2024-10-25", "2024-10-28"];
 
     it("should send an email successfully", async () => {
       employeeServiceMock.getEmployee.mockResolvedValue({
@@ -145,7 +145,7 @@ describe("NotificationService", () => {
         mockStaffEmail,
         emailSubject,
         mockEmailContent,
-        mockDateRange,
+        mockDateRange as any,
         null
       );
 
@@ -168,7 +168,7 @@ describe("NotificationService", () => {
         mockStaffEmail,
         emailSubject,
         mockEmailContent,
-        mockDateRange,
+        mockDateRange as any,
         null
       );
 

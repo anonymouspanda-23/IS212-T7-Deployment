@@ -5,6 +5,8 @@ import EmployeeService from "@/services/EmployeeService";
 interface ManagerDetails {
   name: string;
   email: string;
+  dept: string;
+  position: string; 
 }
 
 class NotificationService {
@@ -23,6 +25,8 @@ class NotificationService {
     return {
       name: `${managerDetails.staffFName} ${managerDetails.staffLName}`,
       email: managerDetails.email,
+      dept: managerDetails.dept,
+      position: managerDetails.position,
     };
   }
 
@@ -58,7 +62,7 @@ class NotificationService {
     requestDates: [string, string][],
     requestReason: string,
   ): string {
-    let textBody = `Your ${requestType.toLowerCase()} for the following dates have been sent to ${manager.name}(${manager.email}):\n`;
+    let textBody = `Your ${requestType.toLowerCase()} for the following dates have been sent to ${manager.name}, ${manager.email} (${manager.dept} - ${manager.position}):\n`;
     requestDates.forEach(([date, type]) => {
       textBody += `${date}, ${type}\n`;
     });
@@ -88,7 +92,7 @@ class NotificationService {
     <html>
       <head></head>
       <body>
-        <p>Your ${requestType.toLowerCase()} for the following dates have been sent to ${manager.name} (<a href="mailto:${manager.email}">${manager.email}</a>).</p>
+        <p>Your ${requestType.toLowerCase()} for the following dates have been sent to ${manager.name}, <a href="mailto:${manager.email}">${manager.email}</a> (${manager.dept} - ${manager.position}).</p>
         <table style="border: 1px solid black; border-collapse: collapse;">
           <tr>
             <th style="border: 1px solid black; border-collapse: collapse;">Requested Dates</th>
@@ -148,7 +152,7 @@ class NotificationService {
     approveEmail: string,
     emailSubject: string,
     emailBodyContent: string,
-    dateRange: Date[] | null,
+    dateRange: [string, string] | null,
     requestedDates: [string, string][] | null,
   ): Promise<any> {
     let emailContentHtml;
@@ -171,7 +175,7 @@ class NotificationService {
   }
 
   private notifHtmlBody(
-    dateRange: Date[] | null,
+    dateRange: [string, string] | null,
     requestedDates: [string, string][] | null,
     emailBodyContent: string,
   ): string {

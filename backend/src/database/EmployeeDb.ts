@@ -117,7 +117,10 @@ class EmployeeDb {
     staffId: number,
   ): Promise<IEmployee[]> {
     const employees = await Employee.aggregate([
-      { $match: { role: { $in: [1, 3] }, staffId: { $ne: staffId } } },
+      {
+        $match: { role: { $in: [1, 3] }, staffId: { $nin: [staffId, 130002] } },
+      },
+
       {
         $project: {
           _id: 0,

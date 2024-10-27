@@ -565,7 +565,7 @@ describe("cancel pending requests", () => {
     employeeDbMock.getEmployee = jest.fn() as any;
     employeeServiceMock.getEmployee = jest.fn() as any;
     UtilsController.throwAPIError = jest.fn();
-
+    notificationServiceMock.notify = jest.fn();
     jest.resetAllMocks();
   });
 
@@ -581,20 +581,30 @@ describe("cancel pending requests", () => {
 
   it("should cancel user's pending request", async () => {
     const { staffId, requestId } = mockRequestData.PENDING;
-    requestDbMock.cancelPendingRequests.mockResolvedValue(
-      mockRequestData.APPROVED as any,
-    );
+    const mockCancelledRequest = [
+      {
+        requestedDate: "2024-10-26",
+        requestType: "AM",
+      },
+    ];
+
+    requestDbMock.cancelPendingRequests.mockResolvedValue(mockCancelledRequest);
+
     employeeServiceMock.getEmployee.mockResolvedValue({
       staffFName: "Janice",
       staffLName: "Chan",
       reportingManager: 140894,
       reportingManagerName: "Rahim Khalid",
+      email: "janice.chan@example.com",
+      dept: "Finance",
+      position: "Analyst",
     } as IEmployee);
 
     const result = await requestService.cancelPendingRequests(
       staffId,
       requestId,
     );
+
     expect(result).toEqual(HttpStatusResponse.OK);
   });
 });

@@ -117,7 +117,8 @@ enum PerformedBy {
 enum EmailHeaders {
   REQUEST_SENT = "[Application] WFH Request Sent",
   REASSIGNMENT_SENT = "[Reassignment] Reassignment Request Sent",
-  WITHDRAWAL_SENT = "[Withdrawal] Withdrawal Request Sent"
+  WITHDRAWAL_SENT = "[Withdrawal] Withdrawal Request Sent",
+  REQUEST_CANCELLED = "[Application] WFH Request Cancelled",
 }
 
 export {

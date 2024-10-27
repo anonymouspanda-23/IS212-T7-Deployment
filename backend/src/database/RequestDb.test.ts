@@ -60,16 +60,31 @@ describe("RequestDb", () => {
     );
   });
 
-  it("should cancel pending requests", async () => {
+  it("should cancel pending requests and return updated documents", async () => {
+    const mockUpdatedRequests = [
+      { staffId: 1, requestId: 1, status: Status.CANCELLED },
+    ];
+
     (Request.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
+
+    (Request.find as jest.Mock).mockResolvedValue(mockUpdatedRequests);
+
     const result = await requestDb.cancelPendingRequests(1, 1);
-    expect(result).toBe(HttpStatusResponse.OK);
+
+    expect(result).toEqual(mockUpdatedRequests);
+
     expect(Request.updateMany).toHaveBeenCalledWith(
       { staffId: 1, requestId: 1, status: Status.PENDING },
       { $set: { status: Status.CANCELLED } },
     );
-  });
 
+    expect(Request.find).toHaveBeenCalledWith({
+      staffId: 1,
+      requestId: 1,
+      status: Status.CANCELLED,
+    });
+  });
+  
   it("should return null if no pending requests to cancel", async () => {
     (Request.updateMany as jest.Mock).mockResolvedValue({ modifiedCount: 0 });
     const result = await requestDb.cancelPendingRequests(1, 1);

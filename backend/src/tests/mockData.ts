@@ -85,6 +85,19 @@ const mockRequestData = {
     status: "REJECTED",
     requestId: 22,
   },
+  [Status.CANCELLED]: {
+    staffId: 140003,
+    staffName: "Janice Chan",
+    reportingManager: 140894,
+    managerName: "Rahim Khalid",
+    dept: "Sales",
+    position: "Account Manager",
+    requestedDate: "2024-10-08T00:00:00.000Z",
+    requestType: "FULL",
+    reason: "Raining",
+    status: "CANCELLED",
+    requestId: 22,
+  },
 };
 
 const mockWithdrawalData = {
@@ -102,9 +115,22 @@ const mockWithdrawalData = {
   status: "PENDING",
 };
 
+const mockReassignmentData = {
+  staffId: 140894,
+  staffName: "Rahim Khalid",
+  startDate: "2024-11-14",
+  endDate: "2024-11-16",
+  tempReportingManagerId: "170166",
+  tempManagerName: "David Yap",
+  status: "APPROVED",
+  active: true,
+  reassignmentId: 22,
+};
+
 export {
   generateMockEmployee,
   generateMockEmployeeTest,
   mockRequestData,
   mockWithdrawalData,
+  mockReassignmentData,
 };
