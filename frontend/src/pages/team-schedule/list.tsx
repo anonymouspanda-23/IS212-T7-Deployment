@@ -216,15 +216,26 @@ export const TeamScheduleList = () => {
     <div>
       <Title level={3}>Department</Title>
       <Flex gap="small" wrap>
-        {Object.keys(allDeptData).map((department) => (
+      {Object.keys(allDeptData).map((department) => {
+          const isTempTeam = allDeptData[department]?.isTempTeam; // Check if isTempTeam exists
+          const isSelected = selectedDepartment === department;
+          const buttonDetails = !isTempTeam ? department : department + " (Assigned)"
+          return (
             <Button
               key={department}
-              type={selectedDepartment === department ? 'primary' : 'default'}
+              type={isSelected ? 'primary' : 'dashed'} // Always dashed if not selected
+              style={{
+                backgroundColor: isTempTeam && isSelected ? 'green' : undefined,
+                borderColor: isTempTeam && !isSelected ? 'green' : undefined,
+                color: isTempTeam && isSelected ? 'white' : isTempTeam && !isSelected ? 'green' : undefined, // Green text if not selected
+                fontWeight: isTempTeam && !isSelected ? 'bold' : undefined, // Bold text if not selected
+              }}
               onClick={() => setSelectedDepartment(department as keyof IResponseData)}
             >
-              {department}
+              {buttonDetails}
             </Button>
-          ))}
+          );
+        })}
       </Flex>
       <Divider />
       <Row gutter={[16, 16]} style={{ height: '100%' }}>

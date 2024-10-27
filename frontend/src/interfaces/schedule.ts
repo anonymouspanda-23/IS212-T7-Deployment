@@ -25,7 +25,8 @@ export interface IDepartment {
     teams: {
         [teamName: string]: number;
     };
-    wfhStaff: IResponseData[]
+    wfhStaff: IResponseData[];
+    isTempTeam?: boolean;
 }
 
 export interface IResponseDept {
