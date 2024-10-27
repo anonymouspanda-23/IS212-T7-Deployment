@@ -182,6 +182,7 @@ export const RequestLogs = () => {
         columns={LogsColumns}
         dataSource={filteredLogs}
         pagination={false}
+        scroll={{ x: "max-content" }}
       />
     </div>
   );

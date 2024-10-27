@@ -8,4 +8,5 @@ export interface DataSourceItem {
   requestId: string;
   staffId: string;
   reportingManager: string;
+  reason: string;
 }

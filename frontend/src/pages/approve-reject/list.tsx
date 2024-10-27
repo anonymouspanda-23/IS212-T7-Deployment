@@ -13,6 +13,7 @@ import {
   Select,
   Statistic,
   Table,
+  Tag,
   Typography,
   message,
 } from "antd";
@@ -76,6 +77,7 @@ export const IncomingList: React.FC = () => {
         reportingManager: request.reportingManager,
         requestId: request.requestId,
         staffId: request.staffId,
+        reason: request.reason
       }));
 
       setDataSource(pendingRequests);
@@ -240,64 +242,26 @@ export const IncomingList: React.FC = () => {
 
   return (
     <List>
+      
       <Typography.Title level={5}>Approve/Reject WFH Requests</Typography.Title>
-      <Row gutter={16}>
-        <Col span={4}>
-          <Card bordered={true} style={{ borderColor: "lightblue" }}>
-            <Statistic
-              title="Pending"
-              value={counts.pending}
-              formatter={formatter}
-            />
-          </Card>
-        </Col>
-        <Col span={4}>
-          <Card bordered={false}>
-            <Statistic
-              title="Approved"
-              value={counts.approved}
-              formatter={formatter}
-            />
-          </Card>
-        </Col>
-        <Col span={4}>
-          <Card bordered={false}>
-            <Statistic
-              title="Rejected"
-              value={counts.rejected}
-              formatter={formatter}
-            />
-          </Card>
-        </Col>
-        <Col span={4}>
-          <Card bordered={false}>
-            <Statistic
-              title="Expired"
-              value={counts.expired}
-              formatter={formatter}
-            />
-          </Card>
-        </Col>
-        <Col span={4}>
-          <Card bordered={false}>
-            <Statistic
-              title="Withdrawn"
-              value={counts.withdrawn}
-              formatter={formatter}
-            />
-          </Card>
-        </Col>
-        <Col span={4}>
-          <Card bordered={false}>
-            <Statistic
-              title="Revoked"
-              value={counts.revoked}
-              formatter={formatter}
-            />
-          </Card>
-        </Col>
+          <Row gutter={[16, 16]}>
+        {[
+          { title: "Pending", value: counts.pending, color: "lightblue" },
+          { title: "Approved", value: counts.approved },
+          { title: "Rejected", value: counts.rejected },
+          { title: "Expired", value: counts.expired },
+          { title: "Withdrawn", value: counts.withdrawn },
+          { title: "Revoked", value: counts.revoked },
+        ].map((item, index) => (
+          <Col xs={12} sm={8} md={8} lg={4} key={index}>
+            <Card bordered={index === 0} style={index === 0 ? { borderColor: item.color } : {}}>
+              <Statistic title={item.title} value={item.value} formatter={formatter} />
+            </Card>
+          </Col>
+        ))}
       </Row>
-
+      
+      
       <Select
         placeholder="Filter by status"
         style={{ width: 200, marginBottom: 16, float: "right", marginTop: 50 }}
@@ -314,13 +278,30 @@ export const IncomingList: React.FC = () => {
         <Select.Option value="Revoked">Revoked</Select.Option>
       </Select>
 
-      <Table dataSource={filteredData} rowKey="requestId" pagination={false}>
+        
+      <Table dataSource={filteredData} rowKey="requestId" pagination={false} scroll={{ x: 'max-content' }}>
         <Table.Column dataIndex="requestId" title="Request ID." />
-        <Table.Column dataIndex="name" title="Name" />
-        <Table.Column dataIndex="email" title="Email" />
+        <Table.Column dataIndex="name" title="Staff Name" />
         <Table.Column dataIndex="department" title="Department/Team" />
-        <Table.Column dataIndex="date" title="Applied Date" />
-        <Table.Column dataIndex="role" title="WFH Duration" />
+        <Table.Column dataIndex="date" title="WFH Date" />
+        <Table.Column dataIndex="role" title="Request Type"  render={(type: any) => {
+            let color = "";
+            switch (type) {
+              case "FULL":
+                color = "purple";
+                break;
+              case "PM":
+              case "AM":
+                color = "gold";
+                break;
+              default:
+                color = "gray";
+                break;
+            }
+            return <Tag color={color}>{type}</Tag>;
+          }} />
+        <Table.Column dataIndex="reason" title="Reason"/>
+        
         <Table.Column
           dataIndex="status"
           title="Status"
@@ -368,12 +349,15 @@ export const IncomingList: React.FC = () => {
         onCancel={handleModalClose}
         footer={null}
         key={currentPost ? currentPost.id : "modal"}
+        width="90%"
+        style={{ maxWidth: "600px" }}
       >
         {currentPost && (
           <Form
             initialValues={{
               title: currentPost.name,
               email: currentPost.email,
+              reason: currentPost.reason,
               status: currentPost.status,
             }}
             onFinish={handleSave}
@@ -423,7 +407,7 @@ export const IncomingList: React.FC = () => {
                 />
               </Form.Item>
             )}
-            <Form.Item>
+            <Form.Item  style={{ textAlign: "center" }}>
               <Button
                 type="primary"
                 danger={currentPost.status === "Approved"}

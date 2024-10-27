@@ -5,7 +5,7 @@ import { EmployeeJWT } from "@/interfaces/employee";
 import { formatDate } from "@/utils/wfh-dateUtils";
 import { Box } from "@chakra-ui/react";
 import { useGetIdentity } from "@refinedev/core";
-import { Button, Table, Tabs, Tag, Typography } from "antd";
+import { Button, Table, Tabs, Tag, Typography, Row, Col } from "antd";
 import axios from "axios";
 import { useEffect, useState } from "react";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -319,9 +319,13 @@ export const MyRequestsContent = () => {
 
   return (
     <div style={{ padding: "16px" }}>
-      <Title level={3} style={{ marginBottom: "20px" }}>
-        Status Of My Requests
-      </Title>
+      
+      <Row gutter={[16, 16]}>
+        <Col xs={24}>
+          <Title level={3}>Status Of My Requests</Title>
+        </Col>
+      </Row>
+
       <Tabs defaultActiveKey="1">
         <TabPane tab="Pending" key="1">
           <Table
@@ -329,6 +333,7 @@ export const MyRequestsContent = () => {
             dataSource={pendingRequests}
             pagination={false}
             rowKey={(request) => request.id}
+            scroll={{ x: "max-content" }}
           />
         </TabPane>
         <TabPane tab="Approved" key="2">
@@ -361,6 +366,7 @@ export const MyRequestsContent = () => {
             dataSource={approvedRequests}
             pagination={false}
             rowKey={(request) => request.id}
+            scroll={{ x: "max-content" }}
           />
         </TabPane>
         <TabPane tab="Rejected" key="3">
@@ -371,6 +377,7 @@ export const MyRequestsContent = () => {
             dataSource={rejectedRequests}
             pagination={false}
             rowKey={(request) => request.id}
+            scroll={{ x: "max-content" }}
           />
         </TabPane>{" "}
         <TabPane tab="Withdrawn" key="4">
@@ -381,6 +388,7 @@ export const MyRequestsContent = () => {
             dataSource={withdrawnRequests}
             pagination={false}
             rowKey={(request) => request.id}
+            scroll={{ x: "max-content" }}
           />
         </TabPane>{" "}
         <TabPane tab="Revoked" key="5">
@@ -391,6 +399,8 @@ export const MyRequestsContent = () => {
             dataSource={revokedRequests}
             pagination={false}
             rowKey={(request) => request.id}
+            scroll={{ x: "max-content" }}
+
           />
         </TabPane>{" "}
       </Tabs>

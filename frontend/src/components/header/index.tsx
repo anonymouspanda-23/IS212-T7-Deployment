@@ -9,7 +9,7 @@ import {
   Typography,
   Badge,
 } from "antd";
-import React, { useContext, useEffect, useMemo } from "react";
+import React, { useContext, useMemo } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
 import { usePendingCount } from "@/pages/approve-reject/requestsCount"; // Importing the hook
 import { usePendingWithdrawalsCount } from "@/pages/manage-withdrawals/requestsCount";
@@ -70,7 +70,7 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
               style={{ marginRight: 8 }}
               onClick={() => navigate("/mainRequests")} // Navigate to the route on click
               >
-              Incoming WFH Requests
+              Incoming Requests
             </Button>
           </Badge>
         </div>
