@@ -16,6 +16,8 @@ import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
 import ReassignmentService from "./ReassignmentService";
 import RequestService from "./RequestService";
+import dayjs from "dayjs";
+import NotificationService from "./NotificationService";
 
 class WithdrawalService {
   private logService: LogService;
@@ -23,6 +25,7 @@ class WithdrawalService {
   private requestService: RequestService;
   private reassignmentService: ReassignmentService;
   private employeeService: EmployeeService;
+  private notificationService: NotificationService;
 
   constructor(
     logService: LogService,
@@ -30,12 +33,14 @@ class WithdrawalService {
     requestService: RequestService,
     reassignmentService: ReassignmentService,
     employeeService: EmployeeService,
+    notificationService: NotificationService,
   ) {
     this.logService = logService;
     this.withdrawalDb = withdrawalDb;
     this.requestService = requestService;
     this.reassignmentService = reassignmentService;
     this.employeeService = employeeService;
+    this.notificationService = notificationService;
   }
 
   public async getWithdrawalRequest(requestId: number) {
@@ -74,7 +79,7 @@ class WithdrawalService {
       dept,
       position,
       requestedDate,
-      requestType
+      requestType,
     } = request!;
 
     if (
@@ -93,7 +98,7 @@ class WithdrawalService {
       dept,
       position,
       requestedDate,
-      requestType
+      requestType,
     };
     const result = await this.withdrawalDb.withdrawRequest(document);
 
@@ -280,8 +285,25 @@ class WithdrawalService {
   public async updateWithdrawalStatusToExpired() {
     const withdrawalRequests =
       await this.withdrawalDb.updateWithdrawalStatusToExpired();
-    if (!!withdrawalRequests) {
-      const { requestId } = withdrawalRequests;
+
+    if (withdrawalRequests && withdrawalRequests.length > 0) {
+      const { requestId, requestedDate, requestType, staffId } =
+        withdrawalRequests[0];
+
+      const employee = await this.employeeService.getEmployee(staffId);
+
+      const emailSubject = `[${Request.WITHDRAWAL}] Withdrawal Expired`;
+      const emailContent = `Your request withdrawal has expired. Please contact your reporting manager for more details.`;
+      const dayjsDate = dayjs(requestedDate);
+      const formattedDate = dayjsDate.format("YYYY-MM-DD");
+      await this.notificationService.notify(
+        employee!.email,
+        emailSubject,
+        emailContent,
+        null,
+        [[formattedDate, requestType]],
+      );
+
       /**
        * Logging
        */

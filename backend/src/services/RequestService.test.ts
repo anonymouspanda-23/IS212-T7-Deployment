@@ -1,6 +1,8 @@
+import { Mailer } from "@/config/mailer";
 import UtilsController from "@/controllers/UtilsController";
 import EmployeeDb from "@/database/EmployeeDb";
 import LogDb from "@/database/LogDb";
+import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
 import {
   AccessControl,
@@ -15,20 +17,18 @@ import { initializeCounter } from "@/helpers/counter";
 import * as dateUtils from "@/helpers/date";
 import { dayWeekAfter } from "@/helpers/unitTestFunctions";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
+import { IEmployee } from "@/models/Employee";
+import NotificationService from "@/services/NotificationService";
+import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
 import { middlewareMockData } from "@/tests/middlewareMockData";
 import { generateMockEmployeeTest, mockRequestData } from "@/tests/mockData";
 import { jest } from "@jest/globals";
 import dayjs from "dayjs";
 import { Context, Next } from "koa";
-import EmployeeService from "./EmployeeService";
-import { IEmployee } from "@/models/Employee";
-import { Mailer } from "@/config/mailer";
 import nodemailer from "nodemailer";
+import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
-import ReassignmentDb from "@/database/ReassignmentDb";
-import ReassignmentService from "@/services/ReassignmentService";
-import NotificationService from "@/services/NotificationService";
 
 beforeAll(() => {
   initializeCounter("requestId");
@@ -1720,32 +1720,23 @@ describe("updateRequestStatusToExpired", () => {
   let requestService: RequestService;
   let logServiceMock: any;
   let employeeServiceMock: any;
-  let mockMailer: jest.Mocked<Mailer>;
-  let mockTransporter: jest.Mocked<nodemailer.Transporter>;
-  let notificationServiceMock: jest.Mocked<NotificationService>;
   let requestDbMock: any;
   let reassignmentServiceMock: any;
+  let notificationServiceMock: jest.Mocked<NotificationService>;
 
   beforeEach(() => {
     requestDbMock = {
       updateRequestStatusToExpired: jest.fn(),
     };
-
+    employeeServiceMock = {
+      getEmployee: jest.fn(),
+    };
+    notificationServiceMock = {
+      notify: jest.fn(),
+    } as any;
     logServiceMock = {
       logRequestHelper: jest.fn(),
     };
-    mockTransporter = {
-      sendMail: jest.fn().mockResolvedValue(null as never),
-    } as unknown as jest.Mocked<nodemailer.Transporter>;
-    mockMailer = {
-      getInstance: jest.fn().mockReturnThis(),
-      getTransporter: jest.fn().mockReturnValue(mockTransporter),
-    } as unknown as jest.Mocked<Mailer>;
-
-    notificationServiceMock = new NotificationService(
-      employeeServiceMock,
-      mockMailer,
-    ) as jest.Mocked<NotificationService>;
 
     requestService = new RequestService(
       logServiceMock,
@@ -1756,28 +1747,36 @@ describe("updateRequestStatusToExpired", () => {
     );
   });
 
-  it("should log the correct requests when there are requests to expire", async () => {
-    const mockRequests = [{ requestId: 1 }, { requestId: 2 }];
+  it("should update request status to expired, notify employee, and log the action", async () => {
+    const mockRequests = [
+      {
+        requestId: "req123",
+        staffId: "staff123",
+        requestedDate: "2023-10-10",
+        requestType: "REASSIGNMENT",
+      },
+    ];
+    const mockEmployee = { email: "test@example.com" };
 
     requestDbMock.updateRequestStatusToExpired.mockResolvedValue(mockRequests);
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee);
 
     await requestService.updateRequestStatusToExpired();
-
     expect(requestDbMock.updateRequestStatusToExpired).toHaveBeenCalled();
-    expect(logServiceMock.logRequestHelper).toHaveBeenCalledTimes(2);
+    expect(employeeServiceMock.getEmployee).toHaveBeenCalledWith("staff123");
+
+    const formattedDate = dayjs("2023-10-10").format("YYYY-MM-DD");
+    expect(notificationServiceMock.notify).toHaveBeenCalledWith(
+      "test@example.com",
+      `[APPLICATION] Application Expired`,
+      "Your application has expired. Please re-apply.",
+      null,
+      [[formattedDate, "REASSIGNMENT"]],
+    );
 
     expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
       performedBy: PerformedBy.SYSTEM,
-      requestId: 1,
-      requestType: "REASSIGNMENT",
-      action: Action.EXPIRE,
-      dept: PerformedBy.PERFORMED_BY_SYSTEM,
-      position: PerformedBy.PERFORMED_BY_SYSTEM,
-    });
-
-    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
-      performedBy: PerformedBy.SYSTEM,
-      requestId: 2,
+      requestId: "req123",
       requestType: "REASSIGNMENT",
       action: Action.EXPIRE,
       dept: PerformedBy.PERFORMED_BY_SYSTEM,
@@ -1785,12 +1784,14 @@ describe("updateRequestStatusToExpired", () => {
     });
   });
 
-  it("should not log anything when there are no requests", async () => {
+  it("should not proceed if no expired requests are returned", async () => {
     requestDbMock.updateRequestStatusToExpired.mockResolvedValue([]);
 
     await requestService.updateRequestStatusToExpired();
 
     expect(requestDbMock.updateRequestStatusToExpired).toHaveBeenCalled();
+    expect(employeeServiceMock.getEmployee).not.toHaveBeenCalled();
+    expect(notificationServiceMock.notify).not.toHaveBeenCalled();
     expect(logServiceMock.logRequestHelper).not.toHaveBeenCalled();
   });
 });

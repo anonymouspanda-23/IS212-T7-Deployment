@@ -1,3 +1,4 @@
+import Mailer from "@/config/mailer";
 import EmployeeController from "@/controllers/EmployeeController";
 import LogController from "@/controllers/LogController";
 import ReassignmentController from "@/controllers/ReassignmentController";
@@ -12,14 +13,13 @@ import { AccessControl } from "@/helpers";
 import { checkUserRolePermission } from "@/middleware/checkUserRolePermission";
 import EmployeeService from "@/services/EmployeeService";
 import LogService from "@/services/LogService";
+import NotificationService from "@/services/NotificationService";
 import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
 import WithdrawalService from "@/services/WithdrawalService";
 import swaggerSpec from "@/swagger";
 import Router from "koa-router";
 import { koaSwagger } from "koa2-swagger-ui";
-import Mailer from "@/config/mailer";
-import NotificationService from "@/services/NotificationService";
 
 /**
  * Databases
@@ -61,6 +61,7 @@ const withdrawalService = new WithdrawalService(
   requestService,
   reassignmentService,
   employeeService,
+  notificationService,
 );
 
 /**

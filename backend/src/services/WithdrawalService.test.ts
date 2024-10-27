@@ -11,6 +11,7 @@ import RequestService from "@/services/RequestService";
 import WithdrawalService from "@/services/WithdrawalService";
 import { mockRequestData, mockWithdrawalData } from "@/tests/mockData";
 import { jest } from "@jest/globals";
+import dayjs from "dayjs";
 import nodemailer from "nodemailer";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
@@ -78,6 +79,7 @@ describe("getWithdrawalRequest", () => {
       requestService,
       reassignmentServiceMock,
       employeeServiceMock,
+      notificationServiceMock,
     );
     withdrawalDbMock.getWithdrawalRequest = jest.fn();
     jest.resetAllMocks();
@@ -162,6 +164,7 @@ describe("withdrawRequest", () => {
       requestService,
       reassignmentServiceMock,
       employeeServiceMock,
+      notificationServiceMock,
     );
     withdrawalDbMock.withdrawRequest = jest.fn();
     requestDbMock.getApprovedRequestByRequestId = jest.fn();
@@ -196,6 +199,7 @@ describe("getOwnWithdrawalRequests", () => {
   let logServiceMock: any;
   let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
   let withdrawalDbMock: any;
+  let notificationServiceMock: jest.Mocked<NotificationService>;
 
   beforeEach(() => {
     withdrawalDbMock = {
@@ -211,6 +215,7 @@ describe("getOwnWithdrawalRequests", () => {
       requestService,
       reassignmentServiceMock,
       employeeServiceMock,
+      notificationServiceMock,
     );
   });
 
@@ -270,6 +275,8 @@ describe("getWithdrawalRequestById", () => {
   let logServiceMock: any;
   let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
   let withdrawalDbMock: any;
+  let notificationServiceMock: jest.Mocked<NotificationService>;
+
   beforeEach(() => {
     withdrawalDbMock = {
       getWithdrawalRequestById: jest.fn(),
@@ -281,6 +288,7 @@ describe("getWithdrawalRequestById", () => {
       requestService,
       reassignmentServiceMock,
       employeeServiceMock,
+      notificationServiceMock,
     );
   });
 
@@ -328,6 +336,7 @@ describe("approveWithdrawalRequest", () => {
   let logServiceMock: any;
   let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
   let withdrawalDbMock: any;
+  let notificationServiceMock: jest.Mocked<NotificationService>;
 
   beforeEach(() => {
     withdrawalDbMock = {
@@ -356,6 +365,7 @@ describe("approveWithdrawalRequest", () => {
       requestServiceMock,
       reassignmentServiceMock,
       employeeServiceMock,
+      notificationServiceMock,
     );
   });
 
@@ -453,6 +463,7 @@ describe("updateWithdrawalStatusToExpired", () => {
   let requestServiceMock: any;
   let employeeServiceMock: jest.Mocked<EmployeeService>;
   let reassignmentServiceMock: jest.Mocked<ReassignmentService>;
+  let notificationServiceMock: jest.Mocked<NotificationService>;
 
   beforeEach(() => {
     withdrawalDbMock = {
@@ -463,35 +474,81 @@ describe("updateWithdrawalStatusToExpired", () => {
       logRequestHelper: jest.fn(),
     };
 
+    employeeServiceMock = {
+      getEmployee: jest.fn(),
+    } as any;
+
+    notificationServiceMock = {
+      notify: jest.fn(),
+    } as any;
+
     withdrawalService = new WithdrawalService(
       logServiceMock,
       withdrawalDbMock,
       requestServiceMock,
       reassignmentServiceMock,
       employeeServiceMock,
+      notificationServiceMock,
     );
   });
 
-  it("should update withdrawal status to expired and log the action", async () => {
-    const mockWithdrawalRequest = {
-      requestId: 1,
+  it("should update withdrawal status, notify the employee, and log the action", async () => {
+    const mockRequest = [
+      {
+        requestId: "123",
+        requestedDate: "2024-10-26T10:00:00Z",
+        requestType: "SomeType",
+        staffId: "staff123",
+      },
+    ];
+    const mockEmployee = {
+      email: "employee@example.com",
     };
 
-    withdrawalDbMock.updateWithdrawalStatusToExpired.mockResolvedValueOnce(
-      mockWithdrawalRequest,
+    withdrawalDbMock.updateWithdrawalStatusToExpired.mockResolvedValue(
+      mockRequest,
     );
+    employeeServiceMock.getEmployee.mockResolvedValue(mockEmployee as any);
 
     await withdrawalService.updateWithdrawalStatusToExpired();
 
     expect(withdrawalDbMock.updateWithdrawalStatusToExpired).toHaveBeenCalled();
+
+    expect(employeeServiceMock.getEmployee).toHaveBeenCalledWith(
+      mockRequest[0].staffId,
+    );
+
+    expect(notificationServiceMock.notify).toHaveBeenCalledWith(
+      mockEmployee.email,
+      `[WITHDRAWAL] Withdrawal Expired`,
+      `Your request withdrawal has expired. Please contact your reporting manager for more details.`,
+      null,
+      [
+        [
+          dayjs(mockRequest[0].requestedDate).format("YYYY-MM-DD"),
+          mockRequest[0].requestType,
+        ],
+      ],
+    );
+
     expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
       performedBy: PerformedBy.SYSTEM,
-      requestId: mockWithdrawalRequest.requestId,
+      requestId: mockRequest[0].requestId,
       requestType: "WITHDRAWAL",
       action: Action.EXPIRE,
       dept: PerformedBy.PERFORMED_BY_SYSTEM,
       position: PerformedBy.PERFORMED_BY_SYSTEM,
     });
+  });
+
+  it("should not proceed with notification and logging if no withdrawal request is found", async () => {
+    withdrawalDbMock.updateWithdrawalStatusToExpired.mockResolvedValue(null);
+
+    await withdrawalService.updateWithdrawalStatusToExpired();
+
+    expect(employeeServiceMock.getEmployee).not.toHaveBeenCalled();
+    expect(notificationServiceMock.notify).not.toHaveBeenCalled();
+    expect(logServiceMock.logRequestHelper).not.toHaveBeenCalled();
   });
 
   it("should not log the action if no withdrawal requests are returned", async () => {

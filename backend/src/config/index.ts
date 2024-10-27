@@ -46,6 +46,7 @@ const startCronJob = async () => {
     requestService,
     reassignmentService,
     employeeService,
+    notificationService,
   );
 
   const job = new CronJob(

@@ -159,11 +159,7 @@ class NotificationService {
         emailBodyContent,
       );
     } else if (dateRange) {
-      emailContentHtml = this.notifHtmlBody(
-        dateRange,
-        null,
-        emailBodyContent,
-      );
+      emailContentHtml = this.notifHtmlBody(dateRange, null, emailBodyContent);
     }
     try {
       const emailContent = { text: "", html: emailContentHtml };
