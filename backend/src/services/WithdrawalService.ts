@@ -251,7 +251,9 @@ class WithdrawalService {
     if (!withdrawalApproval) {
       return null;
     }
-    const result = await this.requestService.setWithdrawnStatus(request.requestId);
+    const result = await this.requestService.setWithdrawnStatus(
+      request.requestId,
+    );
     if (!result) {
       return null;
     }

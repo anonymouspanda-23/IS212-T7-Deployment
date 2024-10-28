@@ -231,6 +231,7 @@ class RequestService {
         requestType: Request.APPLICATION,
         action: Action.RETRIEVE,
         staffName: `${staffFName} ${staffLName}`,
+        reportingManagerId: reportingManager,
         dept: dept as Dept,
         position: position,
       });

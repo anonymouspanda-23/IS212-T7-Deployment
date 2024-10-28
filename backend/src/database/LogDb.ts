@@ -5,6 +5,20 @@ class LogDb {
     await Log.create(logAction);
   }
 
+  public async getOwnLogs(staffId: number) {
+    const subordinateLogs = await Log.find({
+      performedBy: staffId,
+    });
+    return subordinateLogs;
+  }
+
+  public async getSubordinateLogs(reportingManagerId: number) {
+    const subordinateLogs = await Log.find({
+      reportingManagerId,
+    });
+    return subordinateLogs;
+  }
+
   public async getLogs() {
     const logData = await Log.aggregate([
       {

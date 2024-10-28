@@ -31,6 +31,10 @@ class ReassignmentController {
       ctx.body = {
         errMsg: errMsg.NON_REJECTED_REASSIGNMENT,
       };
+    } else if (result === errMsg.SAME_ROLE_REASSIGNMENT) {
+      ctx.body = {
+        errMsg: errMsg.SAME_ROLE_REASSIGNMENT,
+      };
     } else {
       ctx.body = HttpStatusResponse.OK;
     }
@@ -48,7 +52,6 @@ class ReassignmentController {
     ctx.body = reassignmentReq;
   }
 
-  
   public async getTempMgrReassignmentStatus(ctx: Context) {
     const { id } = ctx.request.header;
     if (!id) {
@@ -56,7 +59,9 @@ class ReassignmentController {
     }
     const sanitisedStaffId = numberSchema.parse(id);
     const reassignmentReq =
-      await this.reassignmentService.getTempMgrReassignmentStatus(sanitisedStaffId);
+      await this.reassignmentService.getTempMgrReassignmentStatus(
+        sanitisedStaffId,
+      );
 
     ctx.body = reassignmentReq;
   }

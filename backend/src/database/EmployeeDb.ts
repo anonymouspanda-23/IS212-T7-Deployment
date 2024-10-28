@@ -1,3 +1,4 @@
+import { Role } from "@/helpers";
 import Employee, { IEmployee } from "@/models/Employee";
 import EmployeeTreeNode from "@/models/EmployeeTreeNode";
 
@@ -115,10 +116,14 @@ class EmployeeDb {
 
   public async getRoleOneOrThreeEmployees(
     staffId: number,
+    role: Role,
   ): Promise<IEmployee[]> {
     const employees = await Employee.aggregate([
       {
-        $match: { role: { $in: [1, 3] }, staffId: { $nin: [staffId, 130002] } },
+        $match: {
+          role: { $eq: role },
+          staffId: { $nin: [staffId, 130002] },
+        },
       },
 
       {

@@ -63,6 +63,7 @@ describe("RequestController", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(

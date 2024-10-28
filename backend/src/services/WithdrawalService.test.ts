@@ -59,6 +59,7 @@ describe("getWithdrawalRequest", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
@@ -144,6 +145,7 @@ describe("withdrawRequest", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
@@ -479,6 +481,7 @@ describe("rejectWithdrawalRequest", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
@@ -649,6 +652,7 @@ describe("approveWithdrawalRequest", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
@@ -845,6 +849,7 @@ describe("getSubordinatesWithdrawalRequests", () => {
     logServiceMock = new LogService(
       logDbMock,
       employeeServiceMock,
+      reassignmentDbMock,
     ) as jest.Mocked<LogService>;
 
     reassignmentServiceMock = new ReassignmentService(
@@ -909,9 +914,7 @@ describe("getSubordinatesWithdrawalRequests", () => {
     const reportingManager = 1;
     const mockTempRequests = [{ id: 2, staffId: 3 }];
     const mockReassignmentData = { active: true, staffId: 3 };
-    withdrawalDbMock.getSubordinatesWithdrawalRequests.mockResolvedValue(
-      [],
-    );
+    withdrawalDbMock.getSubordinatesWithdrawalRequests.mockResolvedValue([]);
     reassignmentServiceMock.getActiveReassignmentAsTempManager.mockResolvedValue(
       mockReassignmentData as any,
     );

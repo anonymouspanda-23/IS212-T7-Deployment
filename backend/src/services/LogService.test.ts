@@ -5,6 +5,7 @@ describe("logRequestHelper", () => {
   let logService: LogService;
   let mockEmployeeService: any;
   let mockLogDb: any;
+  let mockReassignmentDb: any;
 
   beforeEach(() => {
     mockEmployeeService = {
@@ -15,7 +16,11 @@ describe("logRequestHelper", () => {
       logAction: jest.fn(),
     } as any;
 
-    logService = new LogService(mockLogDb, mockEmployeeService);
+    logService = new LogService(
+      mockLogDb,
+      mockEmployeeService,
+      mockReassignmentDb,
+    );
   });
 
   it("should log the action taken with the provided options", async () => {
@@ -41,6 +46,7 @@ describe("getAllLogs", () => {
   let logService: LogService;
   let mockEmployeeService: any;
   let mockLogDb: any;
+  let mockReassignmentDb: any;
 
   beforeEach(() => {
     mockEmployeeService = {
@@ -49,9 +55,14 @@ describe("getAllLogs", () => {
 
     mockLogDb = {
       getLogs: jest.fn(),
+      getOwnLogs: jest.fn(),
     } as any;
 
-    logService = new LogService(mockLogDb, mockEmployeeService);
+    logService = new LogService(
+      mockLogDb,
+      mockEmployeeService,
+      mockReassignmentDb,
+    );
   });
 
   it("should return all logs for role 1", async () => {
@@ -72,6 +83,7 @@ describe("getAllLogs", () => {
     const { staffId, role, dept, position, allLogs } = mockData;
     mockEmployeeService.getEmployee.mockResolvedValue({ role, dept, position });
     mockLogDb.getLogs.mockResolvedValue(allLogs);
+    mockLogDb.getOwnLogs.mockResolvedValue(allLogs);
     const result = await logService.getAllLogs(staffId);
 
     expect(mockEmployeeService.getEmployee).toHaveBeenCalledWith(staffId);
@@ -80,24 +92,28 @@ describe("getAllLogs", () => {
   });
 
   it("should return personal logs for role 2", async () => {
+    const staffId = 2;
     const mockData = {
-      staffId: 2,
       role: Role.Staff,
       dept: Dept.ENGINEERING,
       position: "Senior Engineers",
-      allLogs: {
-        Engineering: {
-          "Senior Engineers": ["log1", "log2"],
-        },
+    };
+
+    const personalLogs = ["log1", "log2"];
+    const allLogs = {
+      [mockData.dept]: {
+        [mockData.position]: personalLogs,
       },
     };
-    const { staffId, role, dept, position, allLogs } = mockData;
-    mockEmployeeService.getEmployee.mockResolvedValue({ role, dept, position });
+
+    mockEmployeeService.getEmployee.mockResolvedValue(mockData);
     mockLogDb.getLogs.mockResolvedValue(allLogs);
+    mockLogDb.getOwnLogs.mockResolvedValue(personalLogs);
+
     const result = await logService.getAllLogs(staffId);
 
     expect(mockEmployeeService.getEmployee).toHaveBeenCalledWith(staffId);
-    expect(mockLogDb.getLogs).toHaveBeenCalled();
+    expect(mockLogDb.getOwnLogs).toHaveBeenCalledWith(staffId);
     expect(result).toEqual(allLogs);
   });
 
@@ -112,10 +128,11 @@ describe("getAllLogs", () => {
     const { staffId, role, dept, position, allLogs } = mockData;
     mockEmployeeService.getEmployee.mockResolvedValue({ role, dept, position });
     mockLogDb.getLogs.mockResolvedValue(allLogs);
+    mockLogDb.getOwnLogs.mockResolvedValue(allLogs);
     const result = await logService.getAllLogs(staffId);
 
     expect(mockEmployeeService.getEmployee).toHaveBeenCalledWith(staffId);
     expect(mockLogDb.getLogs).toHaveBeenCalled();
-    expect(result).toEqual(null);
+    expect(result).toEqual({ Engineering: { "Senior Engineers": [] } });
   });
 });

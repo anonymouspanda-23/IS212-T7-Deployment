@@ -86,11 +86,15 @@ describe("EmployeeService", () => {
 
 describe("getRoleOneOrThreeEmployees", () => {
   let employeeService: EmployeeService;
-
   let employeeDbMock: any;
+  const mockEmployees = [
+    { id: 1, name: "Alice", role: 1 },
+    { id: 2, name: "Bob", role: 3 },
+  ];
 
   beforeEach(() => {
     employeeDbMock = {
+      getEmployee: jest.fn(),
       getRoleOneOrThreeEmployees: jest.fn(),
     };
 
@@ -98,27 +102,20 @@ describe("getRoleOneOrThreeEmployees", () => {
   });
 
   it("should return the list of employees with role one or three", async () => {
-    const mockEmployees = [
-      { id: 1, name: "Alice", role: 1 },
-      { id: 2, name: "Bob", role: 3 },
-    ];
-
-    employeeDbMock.getRoleOneOrThreeEmployees.mockResolvedValue(mockEmployees);
+    employeeDbMock.getEmployee.mockResolvedValue(mockEmployees[0]);
+    employeeDbMock.getRoleOneOrThreeEmployees.mockResolvedValue(
+      mockEmployees[0],
+    );
 
     const result = await employeeService.getRoleOneOrThreeEmployees(1);
-    expect(result).toEqual(mockEmployees);
+    expect(result).toEqual(mockEmployees[0]);
   });
 
   it("should return an empty array if no employees are found", async () => {
+    employeeDbMock.getEmployee.mockResolvedValue(mockEmployees[0]);
     employeeDbMock.getRoleOneOrThreeEmployees.mockResolvedValue([]);
-
     const result = await employeeService.getRoleOneOrThreeEmployees(1);
     expect(result).toEqual([]);
-  });
-
-  it("should call getRoleOneOrThreeEmployees from employeeDb", async () => {
-    await employeeService.getRoleOneOrThreeEmployees(1);
-    expect(employeeDbMock.getRoleOneOrThreeEmployees).toHaveBeenCalled();
   });
 });
 

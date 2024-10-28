@@ -1,10 +1,10 @@
 import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
 import { Action, Dept, errMsg, PerformedBy, Request, Status } from "@/helpers";
+import dayjs from "dayjs";
 import EmployeeService from "./EmployeeService";
 import LogService from "./LogService";
 import NotificationService from "./NotificationService";
-import dayjs from "dayjs";
 
 class ReassignmentService {
   private reassignmentDb: ReassignmentDb;
@@ -47,6 +47,10 @@ class ReassignmentService {
 
     if (hasNonRejectedReassignmentBetweenStartAndEndDate) {
       return errMsg.NON_REJECTED_REASSIGNMENT;
+    }
+
+    if (currentManager!.role !== tempReportingManager!.role) {
+      return errMsg.SAME_ROLE_REASSIGNMENT;
     }
 
     const request = {

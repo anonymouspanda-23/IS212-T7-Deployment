@@ -20,9 +20,9 @@ const startCronJob = async () => {
   const mailer = Mailer.getInstance();
   const notificationService = new NotificationService(employeeService, mailer);
   const logDb = new LogDb();
-  const logService = new LogService(logDb, employeeService);
 
   const reassignmentDb = new ReassignmentDb();
+  const logService = new LogService(logDb, employeeService, reassignmentDb);
   const reassignmentService = new ReassignmentService(
     reassignmentDb,
     requestDb,

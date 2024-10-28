@@ -39,7 +39,11 @@ class EmployeeService {
   }
 
   public async getRoleOneOrThreeEmployees(staffId: number) {
-    return await this.employeeDb.getRoleOneOrThreeEmployees(staffId);
+    const employee = await this.getEmployee(staffId)!;
+    return await this.employeeDb.getRoleOneOrThreeEmployees(
+      staffId,
+      employee!.role,
+    );
   }
 }
 

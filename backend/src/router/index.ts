@@ -39,7 +39,7 @@ const mailer = Mailer.getInstance();
  * Services
  */
 const employeeService = new EmployeeService(employeeDb);
-const logService = new LogService(logDb, employeeService);
+const logService = new LogService(logDb, employeeService, reassignmentDb);
 const notificationService = new NotificationService(employeeService, mailer);
 const reassignmentService = new ReassignmentService(
   reassignmentDb,
@@ -497,8 +497,6 @@ router.get("/getReassignmentStatus", (ctx) =>
 router.get("/getTempMgrReassignmentStatus", (ctx) =>
   reassignmentController.getTempMgrReassignmentStatus(ctx),
 );
-
-
 
 /**
  * @openapi

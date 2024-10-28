@@ -26,6 +26,7 @@ enum errMsg {
   DIFFERENT_DEPARTMENT = "User is from a different department and has no additional privilege to view data.",
   DIFFERENT_TEAM = "User is from a different team and has no additional privilege to view data.",
   NON_REJECTED_REASSIGNMENT = "User currently has a pending/active reassignment with the same temporary manager between the same date range.",
+  SAME_ROLE_REASSIGNMENT = "You can only assign to another manager with the same role",
   ACTIVE_REASSIGNMENT = "User currently has an active reassignment. This request is no longer valid.",
   INVALID_ACTION = "Invalid action. Must be 'APPROVE' or 'REJECT'.",
   NO_ACTIVE_REASSIGNMENT = "No active reassignment found for the staff member as temp manager",
