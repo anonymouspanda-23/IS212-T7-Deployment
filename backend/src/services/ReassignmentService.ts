@@ -32,6 +32,15 @@ class ReassignmentService {
   ): Promise<any> {
     const { staffId, tempReportingManagerId, startDate, endDate } =
       reassignmentRequest;
+
+    const now = dayjs().utc(true);
+    const startDateUTC = dayjs(startDate).utc(true);
+    if (startDateUTC.isBefore(now, "day")) {
+      return errMsg.PAST_DATE_NOT_ALLOWED;
+    } else if (startDateUTC.isSame(now, "day")) {
+      return errMsg.CURRENT_DATE_NOT_ALLOWED;
+    }
+
     const currentManager = await this.employeeService.getEmployee(staffId);
     const tempReportingManager = await this.employeeService.getEmployee(
       tempReportingManagerId,

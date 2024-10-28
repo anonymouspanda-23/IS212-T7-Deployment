@@ -27,16 +27,26 @@ class ReassignmentController {
         reassignmentRequest,
       );
 
-    if (result === errMsg.NON_REJECTED_REASSIGNMENT) {
-      ctx.body = {
-        errMsg: errMsg.NON_REJECTED_REASSIGNMENT,
-      };
-    } else if (result === errMsg.SAME_ROLE_REASSIGNMENT) {
-      ctx.body = {
-        errMsg: errMsg.SAME_ROLE_REASSIGNMENT,
-      };
-    } else {
-      ctx.body = HttpStatusResponse.OK;
+    switch (result) {
+      case errMsg.NON_REJECTED_REASSIGNMENT:
+        ctx.body = { errMsg: errMsg.NON_REJECTED_REASSIGNMENT };
+        break;
+
+      case errMsg.PAST_DATE_NOT_ALLOWED:
+        ctx.body = { errMsg: errMsg.PAST_DATE_NOT_ALLOWED };
+        break;
+
+      case errMsg.CURRENT_DATE_NOT_ALLOWED:
+        ctx.body = { errMsg: errMsg.CURRENT_DATE_NOT_ALLOWED };
+        break;
+
+      case errMsg.SAME_ROLE_REASSIGNMENT:
+        ctx.body = { errMsg: errMsg.SAME_ROLE_REASSIGNMENT };
+        break;
+
+      default:
+        ctx.body = HttpStatusResponse.OK;
+        break;
     }
   }
 

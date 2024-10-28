@@ -25,6 +25,8 @@ enum errMsg {
   INSERT_ERROR = "Database insertion error.",
   DIFFERENT_DEPARTMENT = "User is from a different department and has no additional privilege to view data.",
   DIFFERENT_TEAM = "User is from a different team and has no additional privilege to view data.",
+  PAST_DATE_NOT_ALLOWED = "Don't go back to the past. Move on.",
+  CURRENT_DATE_NOT_ALLOWED = "Tomorrow onwards only.",
   NON_REJECTED_REASSIGNMENT = "User currently has a pending/active reassignment with the same temporary manager between the same date range.",
   SAME_ROLE_REASSIGNMENT = "You can only assign to another manager with the same role",
   ACTIVE_REASSIGNMENT = "User currently has an active reassignment. This request is no longer valid.",
@@ -126,6 +128,7 @@ export {
   AccessControl,
   Action,
   Dept,
+  EmailHeaders,
   HttpStatusResponse,
   PERMISSIONS,
   PerformedBy,
@@ -136,5 +139,4 @@ export {
   errMsg,
   noteMsg,
   successMsg,
-  EmailHeaders,
 };

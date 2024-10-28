@@ -1,5 +1,9 @@
 import { Action, errMsg, PerformedBy, Request, Status } from "@/helpers";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import ReassignmentService from "./ReassignmentService";
+
+dayjs.extend(utc);
 
 describe("insertReassignmentRequest", () => {
   let reassignmentService: ReassignmentService;
@@ -27,8 +31,8 @@ describe("insertReassignmentRequest", () => {
   const reassignmentRequest = {
     staffId,
     tempReportingManagerId,
-    startDate: "2024-01-01",
-    endDate: "2024-01-10",
+    startDate: dayjs().add(1, "day").utc(true).toISOString(),
+    endDate: dayjs().subtract(30, "day").utc(true).toISOString(),
   };
 
   beforeEach(() => {
@@ -58,35 +62,31 @@ describe("insertReassignmentRequest", () => {
     jest.clearAllMocks();
   });
 
-  //   it("should insert reassignment request successfully", async () => {
-  //     mockEmployeeService.getEmployee
-  //       .mockResolvedValueOnce(currentManager)
-  //       .mockResolvedValueOnce(tempReportingManager);
-  //     mockReassignmentDb.hasNonRejectedReassignment.mockResolvedValue(false);
+  it("should fail if startDate is in the past", async () => {
+    const pastDate = dayjs().subtract(1, "day").utc(true).toISOString();
+    const reassignmentRequest = {
+      staffId,
+      tempReportingManagerId,
+      startDate: pastDate,
+      endDate: dayjs().subtract(30, "day").utc(true).toISOString(),
+    };
+    const result =
+      await reassignmentService.insertReassignmentRequest(reassignmentRequest);
+    expect(result).toBe(errMsg.PAST_DATE_NOT_ALLOWED);
+  });
 
-  //     await reassignmentService.insertReassignmentRequest(reassignmentRequest);
-
-  //     expect(mockReassignmentDb.insertReassignmentRequest).toHaveBeenCalledWith(
-  //       expect.objectContaining({
-  //         staffName: "John Doe",
-  //         originalManagerDept: "Sales",
-  //         tempManagerName: "Jane Smith",
-  //         status: Status.PENDING,
-  //         active: null,
-  //       }),
-  //     );
-
-  //     expect(mockLogService.logRequestHelper).toHaveBeenCalledWith(
-  //       expect.objectContaining({
-  //         performedBy: staffId,
-  //         requestType: Request.REASSIGNMENT,
-  //         action: Action.APPLY,
-  //         staffName: "John Doe",
-  //         dept: "Sales",
-  //         position: "Manager",
-  //       }),
-  //     );
-  //   });
+  it("should fail if startDate is today", async () => {
+    const todayDate = dayjs().utc(true).toISOString();
+    const reassignmentRequest = {
+      staffId,
+      tempReportingManagerId,
+      startDate: todayDate,
+      endDate: dayjs().subtract(30, "day").utc(true).toISOString(),
+    };
+    const result =
+      await reassignmentService.insertReassignmentRequest(reassignmentRequest);
+    expect(result).toBe(errMsg.CURRENT_DATE_NOT_ALLOWED);
+  });
 
   it("should return error message if there is a non-rejected reassignment", async () => {
     mockEmployeeService.getEmployee
@@ -226,7 +226,8 @@ describe("getTempMgrReassignmentStatus", () => {
       tempMgrReassignmentRequest,
     );
 
-    const result = await reassignmentService.getTempMgrReassignmentStatus(staffId);
+    const result =
+      await reassignmentService.getTempMgrReassignmentStatus(staffId);
 
     expect(mockEmployeeService.getEmployee).toHaveBeenCalledWith(staffId);
     expect(mockLogService.logRequestHelper).toHaveBeenCalledWith({
@@ -237,13 +238,12 @@ describe("getTempMgrReassignmentStatus", () => {
       dept: "Engineering",
       position: "Senior Engineer",
     });
-    expect(mockReassignmentDb.getTempMgrReassignmentRequest).toHaveBeenCalledWith(
-      staffId,
-    );
+    expect(
+      mockReassignmentDb.getTempMgrReassignmentRequest,
+    ).toHaveBeenCalledWith(staffId);
     expect(result).toEqual(tempMgrReassignmentRequest);
   });
 });
-
 
 describe("setActiveReassignmentPeriod", () => {
   let reassignmentService: ReassignmentService;
