@@ -1,12 +1,12 @@
 [
     {
-        "reassignmentId": 1,
-        "staffId": 1,
-        "staffName": "John Doe",
-        "startDate": "2024-11-01",
-        "endDate": "2024-11-05",
-        "tempReportingManagerId": 2,
-        "tempManagerName": "Jane Doe",
+        "staffId": 140001,
+        "staffName": "Derek Tan",
+        "startDate": "2024-09-29T00:00:00.000Z",
+        "endDate": "2024-10-01T00:00:00.000Z",
+        "originalManagerDept": "Engineering",
+        "tempReportingManagerId": 150008,
+        "tempManagerName": "Eric",
         "status": "PENDING",
         "active": null
     }

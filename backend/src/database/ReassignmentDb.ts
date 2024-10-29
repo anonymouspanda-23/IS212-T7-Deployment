@@ -116,7 +116,9 @@ class ReassignmentDb {
     const incomingRequests = await Reassignment.find({
       tempReportingManagerId: staffId,
       status: Status.PENDING,
-    }).lean();
+    })
+      .select("-_id")
+      .lean();
 
     return incomingRequests;
   }

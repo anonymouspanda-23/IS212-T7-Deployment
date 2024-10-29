@@ -63,7 +63,11 @@ describe("insertReassignmentRequest", () => {
   });
 
   it("should fail if startDate is in the past", async () => {
-    const pastDate = dayjs().subtract(1, "day").utc(true).toISOString();
+    const pastDate = dayjs()
+      .startOf("day")
+      .subtract(1, "day")
+      .utc(true)
+      .toISOString();
     const reassignmentRequest = {
       staffId,
       tempReportingManagerId,
@@ -76,7 +80,7 @@ describe("insertReassignmentRequest", () => {
   });
 
   it("should fail if startDate is today", async () => {
-    const todayDate = dayjs().utc(true).toISOString();
+    const todayDate = dayjs().startOf("day").utc(true).toISOString();
     const reassignmentRequest = {
       staffId,
       tempReportingManagerId,
