@@ -138,10 +138,12 @@ export const RequestLogs = () => {
     setSearchText(e.target.value);
   };
   // Filter logs based on search input
-  const filteredLogs = logsShow.filter(
-    (log) =>
-      log.staffName &&
-      log.staffName.toLowerCase().includes(searchText.toLowerCase()),
+  const filteredLogs = logsShow.filter((log) =>
+    Object.values(log).some(
+      (value) =>
+        typeof value === "string" &&
+        value.toLowerCase().includes(searchText.toLowerCase())
+    )
   );
 
   return (
@@ -159,8 +161,8 @@ export const RequestLogs = () => {
         ))}
       </Flex>
       <Divider />
-      <Flex justify="space-between" align="flex-end">
-        <Col>
+      <Flex justify="space-between" align="flex-end" wrap gap={20}>
+        <Col xs={24} md={18}>
           <Title level={4}>Teams</Title>
           <CheckboxGroup
             options={selectedDeptTeams}
@@ -168,9 +170,9 @@ export const RequestLogs = () => {
             onChange={onChange}
           />
         </Col>
-        <Col>
+        <Col xs={24} md={4}>
           <Input
-            placeholder="Search by Staff Name"
+            placeholder="Search Logs..."
             value={searchText}
             onChange={handleSearch}
             style={{ marginBottom: 16 }}

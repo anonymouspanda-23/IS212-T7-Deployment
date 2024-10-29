@@ -59,7 +59,7 @@ const EventTableGroup: React.FC<EventTableGroupProps> = ({ sortedDates, groupedD
                             pagination={false}
                             rowKey={(record) => record.staffName + record.requestedDate} // Unique row key
                             tableLayout="fixed" // Ensure the table layout is fixed
-                            style={{ display: 'flex' }} // Use flexbox for the table
+                            scroll={{ x: "max-content" }}
                         />
                     </div>
                 );

@@ -275,18 +275,18 @@ export const TeamScheduleList = () => {
         </Col>
       </Row>
       <Divider />
-        <Flex justify="space-between" align="flex-end">
-            <Col>
-                <Title level={4}>Teams</Title>
-                <CheckboxGroup options={plainOptions} value={checkedList} onChange={onChange} />
-            </Col>
-            <Col>
-                <Space direction="vertical">
-                <DatePicker onChange={onChangeDate} />
-                </Space>
-            </Col>
-        </Flex>
-        <Divider />
+      <Flex justify="space-between" align="flex-end" wrap gap={20}>
+        <Col xs={24} md={18}>
+          <Title level={4}>Teams</Title>
+          <CheckboxGroup options={plainOptions} value={checkedList} onChange={onChange} />
+        </Col>
+        <Col xs={24} md={4}>
+          <Space direction="vertical" style={{ width: "100%" }}>
+            <DatePicker onChange={onChangeDate} style={{ width: "100%" }} />
+          </Space>
+        </Col>
+      </Flex>
+      <Divider />
       <Tabs defaultActiveKey="1" items={tabItems} />
     </div>
   );
