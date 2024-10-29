@@ -53,7 +53,6 @@ export const authProvider: AuthProvider = {
     const auth = localStorage.getItem("auth");
     if (auth) {
       const myAuth: EmployeeJWT = JSON.parse(auth);
-      console.log(auth)
       const style = document.createElement("style");
       style.id = "dynamic-role-style";
       if(myAuth.role == 2){
