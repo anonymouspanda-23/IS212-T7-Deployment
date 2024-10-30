@@ -10,11 +10,13 @@ import mongoose from "mongoose";
 import nodemailer from "nodemailer";
 import path from "path";
 import request from "supertest";
+import Log from "@/models/Log";
 
 jest.mock("nodemailer");
 jest.unmock("mongoose");
 jest.unmock("@/models/Reassignment");
 jest.unmock("@/models/Employee");
+jest.unmock("@/models/Log");
 
 const mockCounter = {
   seq: 1,
@@ -40,7 +42,13 @@ describe("Reassignment Integration Tests", () => {
   const fileContent2 = readFileSync(filePath2, "utf-8");
   const employees = JSON.parse(fileContent2);
 
+  const filePath3 = path.resolve("@/../script/log.json");
+  const fileContent3 = readFileSync(filePath3, "utf-8");
+  const logs = JSON.parse(fileContent3);
+
   beforeAll(async () => {
+    mockCounter.seq = 1;
+
     const mockTransporter = { verify: jest.fn((cb) => cb(null, true)) };
     (nodemailer.createTransport as jest.Mock).mockReturnValue(mockTransporter);
 
@@ -58,6 +66,7 @@ describe("Reassignment Integration Tests", () => {
   });
 
   beforeEach(async () => {
+    mockCounter.seq = 1;
     await Employee.deleteMany();
     const EMPLOYEE_LIMIT = 10;
     for (let i = 0; i < Math.min(EMPLOYEE_LIMIT, employees.length); i++) {
@@ -66,6 +75,15 @@ describe("Reassignment Integration Tests", () => {
       await Employee.create(employeeData);
     }
 
+    mockCounter.seq = 1;
+    await Log.deleteMany();
+    const LOG_LIMIT = 10;
+    for (let i = 0; i < Math.min(LOG_LIMIT, logs.length); i++) {
+      const logData = logs[i];
+      await Log.create(logData);
+    }
+
+    mockCounter.seq = 1;
     await Reassignment.deleteMany();
     const REASSIGNMENT_LIMIT = 10;
     for (
@@ -156,7 +174,19 @@ describe("Reassignment Integration Tests", () => {
           tempManagerName: "Eric",
           status: "PENDING",
           active: null,
-          reassignmentId: 7,
+          reassignmentId: 1,
+        },
+        {
+          staffId: 140001,
+          staffName: "Derek Tan",
+          startDate: "2024-09-29T00:00:00.000Z",
+          endDate: "2024-10-01T00:00:00.000Z",
+          originalManagerDept: "Engineering",
+          tempReportingManagerId: 151408,
+          tempManagerName: "Philip Lee",
+          status: "PENDING",
+          active: null,
+          reassignmentId: 2,
         },
       ];
 
@@ -194,7 +224,7 @@ describe("Reassignment Integration Tests", () => {
           active: null,
           endDate: "2024-10-01T00:00:00.000Z",
           originalManagerDept: "Engineering",
-          reassignmentId: 11,
+          reassignmentId: 1,
           staffId: 140001,
           staffName: "Derek Tan",
           startDate: "2024-09-29T00:00:00.000Z",
@@ -221,7 +251,7 @@ describe("Reassignment Integration Tests", () => {
     it("should return an error if the header id is missing", async () => {
       const response = await request(mockServer)
         .post("/api/v1/handleReassignmentRequest")
-        .send({ reassignmentId: 11, action: "APPROVE" });
+        .send({ reassignmentId: 1, action: "APPROVE" });
 
       expect(response.body).toEqual({ error: errMsg.MISSING_HEADER });
     });
@@ -239,7 +269,7 @@ describe("Reassignment Integration Tests", () => {
       const response2 = await request(mockServer)
         .post("/api/v1/handleReassignmentRequest")
         .set("id", id)
-        .send({ reassignmentId: 11 });
+        .send({ reassignmentId: 1 });
 
       expect(response2.body).toEqual({ error: errMsg.MISSING_PARAMETERS });
     });
@@ -250,7 +280,7 @@ describe("Reassignment Integration Tests", () => {
       const response = await request(mockServer)
         .post("/api/v1/handleReassignmentRequest")
         .set("id", id)
-        .send({ reassignmentId: 11, action: "INVALID_ACTION" });
+        .send({ reassignmentId: 1, action: "INVALID_ACTION" });
 
       expect(response.body).toEqual({ error: errMsg.INVALID_ACTION });
     });
@@ -261,8 +291,7 @@ describe("Reassignment Integration Tests", () => {
       const response = await request(mockServer)
         .post("/api/v1/handleReassignmentRequest")
         .set("id", id)
-        .send({ reassignmentId: 11, action: Action.APPROVE });
-
+        .send({ reassignmentId: 1, action: Action.APPROVE });
       expect(response.status).toBe(200);
     });
 
@@ -272,8 +301,7 @@ describe("Reassignment Integration Tests", () => {
       const response = await request(mockServer)
         .post("/api/v1/handleReassignmentRequest")
         .set("id", id)
-        .send({ reassignmentId: 11, action: Action.REJECT });
-
+        .send({ reassignmentId: 1, action: Action.REJECT });
       expect(response.status).toBe(200);
     });
   });

@@ -1,13 +1,24 @@
 [
-    {
-        "staffId": 140001,
-        "staffName": "Derek Tan",
-        "startDate": "2024-09-29T00:00:00.000Z",
-        "endDate": "2024-10-01T00:00:00.000Z",
-        "originalManagerDept": "Engineering",
-        "tempReportingManagerId": 150008,
-        "tempManagerName": "Eric",
-        "status": "PENDING",
-        "active": null
-    }
+  {
+    "staffId": 140001,
+    "staffName": "Derek Tan",
+    "startDate": "2024-09-29T00:00:00.000Z",
+    "endDate": "2024-10-01T00:00:00.000Z",
+    "originalManagerDept": "Engineering",
+    "tempReportingManagerId": 150008,
+    "tempManagerName": "Eric",
+    "status": "PENDING",
+    "active": null
+  },
+  {
+    "staffId": 140001,
+    "staffName": "Derek Tan",
+    "startDate": "2024-09-29T00:00:00.000Z",
+    "endDate": "2024-10-01T00:00:00.000Z",
+    "originalManagerDept": "Engineering",
+    "tempReportingManagerId": 151408,
+    "tempManagerName": "Philip Lee",
+    "status": "PENDING",
+    "active": null
+  }
 ]

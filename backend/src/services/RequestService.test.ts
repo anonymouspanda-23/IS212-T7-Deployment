@@ -1858,6 +1858,8 @@ describe("revokeRequest", () => {
       requestDbMock,
       reassignmentServiceMock,
     );
+    employeeServiceMock.getEmployee = jest.fn();
+    jest.resetAllMocks();
   });
 
   it("should return null if the request does not exist", async () => {
@@ -1906,7 +1908,7 @@ describe("revokeRequest", () => {
     expect(result).toBeNull();
   });
 
-  it("should return null if the withdrawal date is past", async () => {
+  it("should return null if the requested date is past", async () => {
     const performedBy = 1;
     const requestId = 2;
     const reason = "No longer needed";
@@ -1934,5 +1936,48 @@ describe("revokeRequest", () => {
     );
 
     expect(result).toBeNull();
+  });
+
+  it("should return HttpStatusResponse.OK if valid performedBy, requestId and reason", async () => {
+    const performedBy = 1;
+    const requestId = 2;
+    const reason = "No longer needed";
+    const request = {
+      reportingManager: 3,
+      requestedDate: new Date(Date.now() + 2),
+      managerName: "Manager Name",
+    };
+
+    requestService.getApprovedRequestByRequestId = jest
+      .fn()
+      .mockResolvedValue(request as never) as any;
+    employeeServiceMock.getEmployee.mockResolvedValue({
+      dept: "Sales",
+      position: "Manager",
+    });
+    reassignmentServiceMock.getReassignmentActive.mockResolvedValue({
+      tempManagerName: "Temp Manager",
+    });
+    requestDbMock.revokeRequest.mockResolvedValue(HttpStatusResponse.OK);
+    jest.spyOn(dateUtils, "checkPastWithdrawalDate").mockReturnValue(false);
+    jest.spyOn(dateUtils, "checkValidWithdrawalDate").mockReturnValue(true);
+
+    const result = await requestService.revokeRequest(
+      performedBy,
+      requestId,
+      reason,
+    );
+
+    expect(result).toBe(HttpStatusResponse.OK);
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
+      performedBy: performedBy,
+      requestType: "APPLICATION",
+      action: Action.REVOKE,
+      dept: "Sales",
+      position: "Manager",
+      reason: "No longer needed",
+      staffName: "Temp Manager",
+      requestId: 2,
+    });
   });
 });

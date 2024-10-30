@@ -56,6 +56,11 @@ describe("getAllLogs", () => {
     mockLogDb = {
       getLogs: jest.fn(),
       getOwnLogs: jest.fn(),
+      getSubordinateLogs: jest.fn(),
+    } as any;
+
+    mockReassignmentDb = {
+      getActiveReassignmentAsTempManager: jest.fn(),
     } as any;
 
     logService = new LogService(
@@ -89,6 +94,36 @@ describe("getAllLogs", () => {
     expect(mockEmployeeService.getEmployee).toHaveBeenCalledWith(staffId);
     expect(mockLogDb.getLogs).toHaveBeenCalled();
     expect(result).toEqual(allLogs);
+  });
+
+  it("should handle active reassignment correctly for Manager role", async () => {
+    mockEmployeeService.getEmployee.mockResolvedValue({
+      role: Role.Manager,
+      dept: Dept.ENGINEERING,
+      position: "Manager",
+    });
+
+    const personalLogs = [{ logId: 1 }];
+    const subordinateLogs = [{ logId: 2 }];
+    const reassignmentLogs = [{ logId: 3 }];
+
+    mockLogDb.getOwnLogs.mockResolvedValue(personalLogs);
+
+    mockLogDb.getSubordinateLogs.mockResolvedValueOnce(subordinateLogs);
+
+    mockReassignmentDb.getActiveReassignmentAsTempManager.mockResolvedValue({
+      staffId: 2,
+    });
+
+    mockLogDb.getSubordinateLogs.mockResolvedValueOnce(reassignmentLogs);
+
+    const result = await logService.getAllLogs(1);
+
+    expect(result).toEqual({
+      [Dept.ENGINEERING]: {
+        Manager: [...personalLogs, ...subordinateLogs, ...reassignmentLogs],
+      },
+    });
   });
 
   it("should return personal logs for role 2", async () => {
@@ -134,5 +169,36 @@ describe("getAllLogs", () => {
     expect(mockEmployeeService.getEmployee).toHaveBeenCalledWith(staffId);
     expect(mockLogDb.getLogs).toHaveBeenCalled();
     expect(result).toEqual({ Engineering: { "Senior Engineers": [] } });
+  });
+});
+
+describe("logAction", () => {
+  let logService: LogService;
+  let mockEmployeeService: any;
+  let mockLogDb: any;
+  let mockReassignmentDb: any;
+
+  beforeEach(() => {
+    mockEmployeeService = {
+      getEmployee: jest.fn(),
+    } as any;
+
+    mockLogDb = {
+      logAction: jest.fn(),
+    } as any;
+
+    logService = new LogService(
+      mockLogDb,
+      mockEmployeeService,
+      mockReassignmentDb,
+    );
+  });
+
+  it("should call logAction with the correct log data", async () => {
+    const logAction = {
+      actionType: "APPLY",
+    };
+    await logService.logActions(logAction);
+    expect(mockLogDb.logAction).toHaveBeenCalledWith(logAction);
   });
 });

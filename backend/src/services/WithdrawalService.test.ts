@@ -4,12 +4,20 @@ import LogDb from "@/database/LogDb";
 import ReassignmentDb from "@/database/ReassignmentDb";
 import RequestDb from "@/database/RequestDb";
 import WithdrawalDb from "@/database/WithdrawalDb";
-import { Action, HttpStatusResponse, PerformedBy, Status } from "@/helpers";
+import {
+  Action,
+  HttpStatusResponse,
+  PerformedBy,
+  Status,
+  Request,
+} from "@/helpers";
 import NotificationService from "@/services/NotificationService";
 import ReassignmentService from "@/services/ReassignmentService";
 import RequestService from "@/services/RequestService";
 import WithdrawalService from "@/services/WithdrawalService";
+import * as dateUtils from "@/helpers/date";
 import {
+  generateMockEmployeeTest,
   mockReassignmentData,
   mockRequestData,
   mockWithdrawalData,
@@ -175,6 +183,10 @@ describe("withdrawRequest", () => {
     withdrawalDbMock.withdrawRequest = jest.fn();
     requestDbMock.getApprovedRequestByRequestId = jest.fn();
     withdrawalDbMock.getWithdrawalRequest = jest.fn();
+    requestDbMock.updateRequestinitiatedWithdrawalValue = jest.fn();
+    logServiceMock.logRequestHelper = jest.fn();
+    withdrawalDbMock.getWithdrawalRequest = jest.fn();
+    employeeServiceMock.getEmployee = jest.fn();
     jest.resetAllMocks();
   });
 
@@ -195,6 +207,28 @@ describe("withdrawRequest", () => {
     requestDbMock.getApprovedRequestByRequestId.mockResolvedValue([] as any);
     const result = await withdrawalService.getWithdrawalRequest(1044);
     expect(result).toEqual(null);
+  });
+
+  it("should return HttpStatusResponse.OK for a valid requestId with no existing pending / approved withdrawal", async () => {
+    const { requestId } = mockWithdrawalData;
+    requestDbMock.getApprovedRequestByRequestId.mockResolvedValue([
+      mockRequestData.APPROVED,
+    ] as any);
+    jest.spyOn(dateUtils, "checkPastWithdrawalDate").mockReturnValue(false);
+    jest.spyOn(dateUtils, "checkValidWithdrawalDate").mockReturnValue(true);
+    requestDbMock.updateRequestinitiatedWithdrawalValue.mockResolvedValue(true);
+    withdrawalDbMock.getWithdrawalRequest.mockResolvedValue([] as any);
+    withdrawalDbMock.withdrawRequest.mockResolvedValue(HttpStatusResponse.OK);
+    employeeServiceMock.getEmployee.mockResolvedValue(
+      generateMockEmployeeTest as any,
+    );
+    const result = await withdrawalService.withdrawRequest(requestId);
+    expect(result).toEqual(HttpStatusResponse.OK);
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith({
+      requestType: Request.WITHDRAWAL,
+      requestId: mockWithdrawalData.requestId,
+      action: Action.APPLY,
+    });
   });
 });
 
@@ -511,6 +545,7 @@ describe("rejectWithdrawalRequest", () => {
     withdrawalDbMock.getWithdrawalRequestById = jest.fn();
     withdrawalDbMock.rejectWithdrawalRequest = jest.fn();
     reassignmentServiceMock.getReassignmentActive = jest.fn();
+    logServiceMock.logRequestHelper = jest.fn();
     employeeServiceMock.getEmployee = jest.fn();
     jest.resetAllMocks();
   });
@@ -603,6 +638,10 @@ describe("rejectWithdrawalRequest", () => {
       HttpStatusResponse.OK,
     );
 
+    employeeServiceMock.getEmployee.mockResolvedValue(
+      generateMockEmployeeTest as any,
+    );
+
     const result = await withdrawalService.rejectWithdrawalRequest(
       performedBy,
       withdrawalId,
@@ -610,6 +649,15 @@ describe("rejectWithdrawalRequest", () => {
     );
 
     expect(result).toEqual(HttpStatusResponse.OK);
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requestType: Request.WITHDRAWAL,
+        reason: reason,
+        performedBy: performedBy,
+        requestId: mockRequest.id,
+        action: Action.REJECT,
+      }),
+    );
   });
 });
 
@@ -684,6 +732,7 @@ describe("approveWithdrawalRequest", () => {
     reassignmentServiceMock.getReassignmentActive = jest.fn();
     requestService.setWithdrawnStatus = jest.fn();
     employeeServiceMock.getEmployee = jest.fn();
+    logServiceMock.logRequestHelper = jest.fn();
     jest.resetAllMocks();
   });
 
@@ -770,12 +819,25 @@ describe("approveWithdrawalRequest", () => {
       HttpStatusResponse.OK,
     );
 
+    employeeServiceMock.getEmployee.mockResolvedValue(
+      generateMockEmployeeTest as any,
+    );
+
     const result = await withdrawalService.approveWithdrawalRequest(
       performedBy,
       withdrawalId,
     );
 
     expect(result).toEqual(HttpStatusResponse.OK);
+
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requestType: Request.WITHDRAWAL,
+        performedBy: performedBy,
+        requestId: mockRequest.id,
+        action: Action.APPROVE,
+      }),
+    );
   });
 
   it("should return null if setting the withdrawn status fails", async () => {
@@ -879,22 +941,63 @@ describe("getSubordinatesWithdrawalRequests", () => {
     withdrawalDbMock.getWithdrawalRequest = jest.fn();
     withdrawalDbMock.getSubordinatesWithdrawalRequests = jest.fn();
     reassignmentServiceMock.getActiveReassignmentAsTempManager = jest.fn();
+    logServiceMock.logRequestHelper = jest.fn();
+    employeeServiceMock.getEmployee = jest.fn();
     jest.resetAllMocks();
   });
 
-  it("should return subordinates' withdrawal requests without active reassignment", async () => {
-    const { reportingManager } = mockWithdrawalData;
+  it("should log the request when there are subordinates' withdrawal requests", async () => {
+    const mockWithdrawalData = [
+      {
+        requestId: 1,
+        staffId: 150245,
+        staffName: "Benjamin Tan",
+        reportingManager: 151408,
+        managerName: "Philip Lee",
+        dept: "Engineering",
+        position: "Call Centre",
+        reason: "Plans cancelled",
+        requestedDate: new Date("2024-09-15T00:00:00.000Z"),
+        requestType: "AM",
+        withdrawalId: 6,
+        status: "PENDING",
+      },
+    ];
+
+    const { reportingManager } = mockWithdrawalData[0];
+
     withdrawalDbMock.getSubordinatesWithdrawalRequests.mockResolvedValue(
       mockWithdrawalData as any,
     );
+
     reassignmentServiceMock.getActiveReassignmentAsTempManager.mockResolvedValue(
       null,
     );
-    const result =
-      await withdrawalService.getSubordinatesWithdrawalRequests(
-        reportingManager,
-      );
-    expect(result).toEqual(mockWithdrawalData as any);
+
+    employeeServiceMock.getEmployee.mockResolvedValue({
+      staffFName: "Philip",
+      staffLName: "Lee",
+      dept: "Engineering",
+      position: "Manager",
+    } as any);
+
+    const result = await withdrawalService.getSubordinatesWithdrawalRequests(
+      reportingManager,
+      true,
+    );
+
+    expect(result).toEqual(mockWithdrawalData);
+
+    expect(logServiceMock.logRequestHelper).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requestType: Request.WITHDRAWAL,
+        performedBy: reportingManager,
+        action: Action.RETRIEVE,
+        staffName: "Philip Lee",
+        dept: "Engineering",
+        position: "Manager",
+      }),
+    );
   });
 
   it("should return [] if there is no reassignments", async () => {

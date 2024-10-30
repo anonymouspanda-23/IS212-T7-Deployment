@@ -10,5 +10,29 @@
     "reason": "Plans cancelled",
     "requestedDate": "2024-10-22",
     "requestType": "AM"
+  },
+  {
+    "requestId": 3,
+    "staffId": 150245,
+    "staffName": "Benjamin Tan",
+    "reportingManager": 151408,
+    "managerName": "Philip Lee",
+    "dept": "Engineering",
+    "position": "Call Centre",
+    "reason": "Plans cancelled",
+    "requestedDate": "2024-09-15",
+    "requestType": "AM"
+  },
+  {
+    "requestId": 6,
+    "staffId": 140008,
+    "staffName": "Jaclyn Lee",
+    "reportingManager": 140001,
+    "managerName": "Derek Tan",
+    "dept": "Sales",
+    "position": "Sales Manager",
+    "reason": "Plans cancelled",
+    "requestedDate": "2024-09-18",
+    "requestType": "AM"
   }
 ]

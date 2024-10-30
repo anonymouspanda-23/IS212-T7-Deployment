@@ -1,6 +1,7 @@
 import { errMsg, HttpStatusResponse, Status, successMsg } from "@/helpers";
 import { app } from "@/index";
 import Employee from "@/models/Employee";
+import Log from "@/models/Log";
 import Request from "@/models/Request";
 import { hashPassword } from "@/tests/utils";
 import { readFileSync } from "fs";
@@ -40,7 +41,13 @@ describe("Request Integration Test", () => {
   const employeeFileContent = readFileSync(employeeFilePath, "utf-8");
   const employees = JSON.parse(employeeFileContent);
 
+  const logFilePath = path.resolve("@/../script/log.json");
+  const logFileContent = readFileSync(logFilePath, "utf-8");
+  const logs = JSON.parse(logFileContent);
+
   beforeAll(async () => {
+    mockCounter.seq = 1;
+
     const mockTransporter = { verify: jest.fn((cb) => cb(null, true)) };
     (nodemailer.createTransport as jest.Mock).mockReturnValue(mockTransporter);
 
@@ -58,6 +65,8 @@ describe("Request Integration Test", () => {
   });
 
   beforeEach(async () => {
+    mockCounter.seq = 1;
+
     await Employee.deleteMany();
     const EMPLOYEE_LIMIT = 10;
     for (let i = 0; i < Math.min(EMPLOYEE_LIMIT, employees.length); i++) {
@@ -65,6 +74,16 @@ describe("Request Integration Test", () => {
       employeeData.hashedPassword = await hashPassword("password123");
       await Employee.create(employeeData);
     }
+
+    mockCounter.seq = 1;
+    await Log.deleteMany();
+    const LOG_LIMIT = 10;
+    for (let i = 0; i < Math.min(LOG_LIMIT, logs.length); i++) {
+      const logData = logs[i];
+      await Log.create(logData);
+    }
+
+    mockCounter.seq = 1;
 
     await Request.deleteMany();
     const REQUEST_LIMIT = 10;
@@ -205,7 +224,7 @@ describe("Request Integration Test", () => {
               position: "Director",
               reason: "Apple Launch Day",
               reportingManager: 130002,
-              requestId: 22,
+              requestId: 2,
               requestType: "AM",
               requestedDate: "2024-12-15T00:00:00.000Z",
               staffId: 140001,
@@ -240,7 +259,7 @@ describe("Request Integration Test", () => {
     it("should approve the request and return OK for valid approval details", async () => {
       const approvalDetails = {
         performedBy: 130002,
-        requestId: 26,
+        requestId: 1,
       };
 
       const response = await request(mockServer)
@@ -265,7 +284,7 @@ describe("Request Integration Test", () => {
       expect(response.body).toHaveProperty("errMsg");
     });
 
-    it("should return NOT_MODIFIED if the request could not be approved", async () => {
+    it("should return NOT_MODIFIED if the requestId is invalid", async () => {
       const approvalDetails = {
         performedBy: 140001,
         requestId: 99999,
@@ -323,7 +342,7 @@ describe("Request Integration Test", () => {
       expect(JSON.parse(response.text)).toStrictEqual(expectedResponse);
     });
 
-    it("should return NOT_MODIFIED if the request could not be rejected", async () => {
+    it("should return NOT_MODIFIED if the requestId is invalid", async () => {
       const rejectionDetails = {
         performedBy: 140001,
         requestId: 99999,
@@ -340,7 +359,7 @@ describe("Request Integration Test", () => {
   });
 
   describe("revokeRequest", () => {
-    it("should revoke the request for valid revocation details", async () => {
+    it("should return NOT_MODIFIED if the requestId is invalid", async () => {
       const revocationDetails = {
         performedBy: 140001,
         requestId: 12345,
