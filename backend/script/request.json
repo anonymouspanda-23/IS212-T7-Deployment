@@ -1,42 +1,30 @@
 [
-  {
-    "staffId": 150245,
-    "staffName": "Benjamin Tan",
-    "reportingManager": 151408,
-    "managerName": "Philip Lee",
-    "dept": "Engineering",
-    "requestedDate": "2024-09-15",
-    "reason": "Take care of son",
-    "requestType": "AM"
-  },
-  {
-    "staffId": 150245,
-    "staffName": "Benjamin Tan",
-    "reportingManager": 151408,
-    "managerName": "Philip Lee",
-    "dept": "Engineering",
-    "requestedDate": "2024-09-16",
-    "reason": "Take care of daugher",
-    "requestType": "AM"
-  },
-  {
-    "staffId": 150245,
-    "staffName": "Benjamin Tan",
-    "reportingManager": 151408,
-    "managerName": "Philip Lee",
-    "dept": "Engineering",
-    "requestedDate": "2024-09-17",
-    "reason": "Take care of mother",
-    "requestType": "AM"
-  },
-  {
-    "staffId": 150245,
-    "staffName": "Benjamin Tan",
-    "reportingManager": 151408,
-    "managerName": "Philip Lee",
-    "dept": "Engineering",
-    "requestedDate": "2024-09-18",
-    "reason": "Take care of father",
-    "requestType": "AM"
-  }
+    {
+        "staffId": 140001,
+        "staffName": "Derek Tan",
+        "reportingManager": 130002,
+        "managerName": "Jack Sim",
+        "position": "Director",
+        "dept": "Sales",
+        "requestedDate": "2024-11-15",
+        "reason": "Apple Launch Day",
+        "requestType": "AM",
+        "initiatedWithdrawal": false,
+        "status": "PENDING",
+        "requestId": 1
+    },
+    {
+        "staffId": 140001,
+        "staffName": "Derek Tan",
+        "reportingManager": 130002,
+        "managerName": "Jack Sim",
+        "position": "Director",
+        "dept": "Sales",
+        "requestedDate": "2024-12-15",
+        "reason": "Apple Launch Day",
+        "requestType": "AM",
+        "initiatedWithdrawal": false,
+        "status": "APPROVED",
+        "requestId": 2
+    }
 ]
