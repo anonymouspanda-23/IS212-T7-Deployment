@@ -161,7 +161,7 @@ export const MyReassignments = () => {
     }
   };
 
-  const disablePastDates = (current: moment.Moment) => {
+  const disableCurrentAndPastDates = (current: moment.Moment) => {
     return current && current <= moment().startOf("day");
   };
 
@@ -344,7 +344,7 @@ export const MyReassignments = () => {
               style={{ marginBottom: 16 }}
             />
             <RangePicker
-              disabledDate={disablePastDates as any}
+              disabledDate={disableCurrentAndPastDates as any}
               value={dateRange}
               onChange={(dates) => setDateRange(dates)}
               style={{ width: "100%" }}
