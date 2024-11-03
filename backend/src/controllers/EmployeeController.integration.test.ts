@@ -9,7 +9,7 @@ import request from "supertest";
 import { Server } from "http";
 import { errMsg } from "@/helpers";
 
-// Unmock mongoose and Employee model specifically for this test file
+// Unmock mongoose and Employee model specifically for integration tests
 jest.unmock('mongoose');
 jest.unmock('@/models/Employee');
 
@@ -80,7 +80,7 @@ describe('Employee Integration Tests', () => {
     it('should return error for non-existent user', async () => {
       const requestBody = {
         staffEmail: 'nonexistent@lurence.org',
-        staffPassword: 'test-password'
+        staffPassword: 'password123'
       };
 
       const expectedResponse = {
@@ -91,7 +91,121 @@ describe('Employee Integration Tests', () => {
         .post("/api/v1/login")
         .send(requestBody)
 
+      expect(response.status).toBe(404);
+      expect(response.body).toStrictEqual(expectedResponse);
+    });
+
+    it('should return error for incorrect password', async () => {
+      const requestBody = {
+        staffEmail: 'jack.sim@allinone.com.sg',
+        staffPassword: 'wrongpassword'
+      };
+
+      const expectedResponse = {
+        "error": errMsg.WRONG_PASSWORD
+      };
+
+      const response = await request(mockServer)
+        .post("/api/v1/login")
+        .send(requestBody)
+
+      expect(response.status).toBe(401);
+      expect(response.body).toStrictEqual(expectedResponse);
+    });
+
+    it('should return error for missing parameters', async () => {
+      const requestBody = {
+        staffEmail: 'jack.sim@allinone.com.sg'
+      };
+
+      const expectedResponse = {
+        "error": errMsg.MISSING_PARAMETERS
+      };
+
+      const response = await request(mockServer)
+        .post("/api/v1/login")
+        .send(requestBody)
+
+      expect(response.status).toBe(400);
+      expect(response.body).toStrictEqual(expectedResponse);
+    });
+  });
+
+  describe('getEmployee', () => {
+    it('should return employee data when valid staffId is provided', async () => {
+      const staffId = 130002;
+
+      const expectedResponse = {
+        staffId: 130002,
+        staffFName: 'Jack',
+        staffLName: 'Sim',
+        dept: 'CEO',
+        position: 'MD',
+        country: 'Singapore',
+        email: 'jack.sim@allinone.com.sg',
+        reportingManager: 130002,
+        role: 1
+      };
+
+      const response = await request(mockServer)
+        .get(`/api/v1/getEmployee?staffId=${staffId}`)
+
       expect(response.status).toBe(200);
+      expect(response.body).toStrictEqual(expectedResponse);
+    });
+
+    it('should return error for missing staffId', async () => {
+      const expectedResponse = {
+        "error": errMsg.MISSING_PARAMETERS
+      };
+
+      const response = await request(mockServer)
+        .get('/api/v1/getEmployee')
+
+      expect(response.status).toBe(400);
+      expect(response.body).toStrictEqual(expectedResponse);
+    });
+
+    it("should return error for invalid staffId", async () => {
+      const staffId = 130001;
+
+      const expectedResponse = {
+        "error": errMsg.USER_DOES_NOT_EXIST
+      };
+
+      const response = await request(mockServer)
+        .get(`/api/v1/getEmployee?staffId=${staffId}`)
+
+      expect(response.status).toBe(404);
+      expect(response.body).toStrictEqual(expectedResponse);
+    })
+  });
+
+  describe('getRoleOneOrThreeEmployees', () => {
+    it('should return employees with role 1 or 3 for a valid staffId', async () => {
+      const staffId = 130002;
+
+      const response = await request(mockServer)
+        .get('/api/v1/getRoleOneOrThreeEmployees')
+        .set('id', staffId.toString())
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThan(0);
+      expect(response.body[0]).toHaveProperty('staffId');
+      expect(response.body[0]).toHaveProperty('staffName');
+      expect(response.body[0]).toHaveProperty('email');
+    });
+
+    it('should return error for missing id in header', async () => {
+      const expectedResponse = {
+        "error": errMsg.MISSING_HEADER
+      };
+
+      const response = await request(mockServer)
+        .get('/api/v1/getRoleOneOrThreeEmployees')
+
+      expect(response.status).toBe(400);
       expect(response.body).toStrictEqual(expectedResponse);
     });
   });

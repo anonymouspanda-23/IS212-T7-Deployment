@@ -15,10 +15,19 @@ class EmployeeController {
   public async getEmployee(ctx: Context) {
     const { staffId } = ctx.query;
     if (!staffId) {
+      ctx.status = 400;
       return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
     }
 
     const result = await this.employeeService.getEmployee(Number(staffId));
+
+    if (result === null) {
+      ctx.status = 404;
+      ctx.body = {
+        "error": errMsg.USER_DOES_NOT_EXIST
+      }
+      return;
+    }
     ctx.body = result;
   }
 
@@ -26,6 +35,7 @@ class EmployeeController {
     const { staffEmail, staffPassword } = ctx.request.body as LoginBody;
 
     if (!staffEmail || !staffPassword) {
+      ctx.status = 400;
       return UtilsController.throwAPIError(ctx, errMsg.MISSING_PARAMETERS);
     }
 
@@ -35,10 +45,12 @@ class EmployeeController {
     );
 
     if (result == errMsg.USER_DOES_NOT_EXIST) {
+      ctx.status = 404;
       return UtilsController.throwAPIError(ctx, errMsg.USER_DOES_NOT_EXIST);
     }
 
     if (result == errMsg.WRONG_PASSWORD) {
+      ctx.status = 401;
       return UtilsController.throwAPIError(ctx, errMsg.WRONG_PASSWORD);
     }
 
@@ -72,6 +84,7 @@ class EmployeeController {
     const { staffId } = ctx.query;
     const validation = numberSchema.safeParse(staffId);
     if (!validation.success) {
+      ctx.status = 400;
       ctx.body = {
         errMsg: validation.error.format(),
       };
@@ -101,6 +114,7 @@ class EmployeeController {
   public async getRoleOneOrThreeEmployees(ctx: Context) {
     const { id } = ctx.request.header;
     if (!id) {
+      ctx.status = 400;
       return UtilsController.throwAPIError(ctx, errMsg.MISSING_HEADER);
     }
     const employees = await this.employeeService.getRoleOneOrThreeEmployees(
