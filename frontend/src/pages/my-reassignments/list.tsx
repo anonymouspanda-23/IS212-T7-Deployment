@@ -162,7 +162,7 @@ export const MyReassignments = () => {
   };
 
   const disablePastDates = (current: moment.Moment) => {
-    return current && current < moment().startOf("day");
+    return current && current <= moment().startOf("day");
   };
 
   // Fetch reassignment status (handling object response)
