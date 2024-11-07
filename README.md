@@ -3,6 +3,18 @@
 <img src="https://github.com/user-attachments/assets/7328d6de-51fe-48b7-bd0b-6fdc01687a01" alt="g5t7" width="600" />
 <br><br>
 
+# Project Link
+
+https://g5t7.vercel.app
+
+# Authentication Credentials
+
+| Role             | Email                        | Password    |
+| ---------------- | ---------------------------- | ----------- |
+| Role 1 (HR)      | Philip.Lee@allinone.com.sg   | password123 |
+| Role 2 (Staff)   | Ngoc.Trinh@allinone.com.vn   | password123 |
+| Role 3 (Manager) | Rahim.Khalid@allinone.com.sg | password123 |
+
 ## Tech Stack
 
 - [React.js](https://react.dev)
